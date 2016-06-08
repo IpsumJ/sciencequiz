@@ -215,9 +215,9 @@ ALTER SEQUENCE questions_id_seq OWNED BY questions.id;
 --
 
 CREATE TABLE quiz_questsions (
-    quiz integer NOT NULL,
     index integer NOT NULL,
-    id integer NOT NULL
+    id integer NOT NULL,
+    question integer NOT NULL
 );
 
 
@@ -245,10 +245,10 @@ ALTER SEQUENCE quiz_questsions_id_seq OWNED BY quiz_questsions.id;
 
 
 --
--- Name: quiz_questsions_quiz_seq; Type: SEQUENCE; Schema: public; Owner: scq
+-- Name: quiz_questsions_question_seq; Type: SEQUENCE; Schema: public; Owner: scq
 --
 
-CREATE SEQUENCE quiz_questsions_quiz_seq
+CREATE SEQUENCE quiz_questsions_question_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -256,13 +256,13 @@ CREATE SEQUENCE quiz_questsions_quiz_seq
     CACHE 1;
 
 
-ALTER TABLE quiz_questsions_quiz_seq OWNER TO scq;
+ALTER TABLE quiz_questsions_question_seq OWNER TO scq;
 
 --
--- Name: quiz_questsions_quiz_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: scq
+-- Name: quiz_questsions_question_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: scq
 --
 
-ALTER SEQUENCE quiz_questsions_quiz_seq OWNED BY quiz_questsions.quiz;
+ALTER SEQUENCE quiz_questsions_question_seq OWNED BY quiz_questsions.question;
 
 
 --
@@ -377,17 +377,17 @@ ALTER TABLE ONLY questions ALTER COLUMN category SET DEFAULT nextval('questions_
 
 
 --
--- Name: quiz; Type: DEFAULT; Schema: public; Owner: scq
---
-
-ALTER TABLE ONLY quiz_questsions ALTER COLUMN quiz SET DEFAULT nextval('quiz_questsions_quiz_seq'::regclass);
-
-
---
 -- Name: id; Type: DEFAULT; Schema: public; Owner: scq
 --
 
 ALTER TABLE ONLY quiz_questsions ALTER COLUMN id SET DEFAULT nextval('quiz_questsions_id_seq'::regclass);
+
+
+--
+-- Name: question; Type: DEFAULT; Schema: public; Owner: scq
+--
+
+ALTER TABLE ONLY quiz_questsions ALTER COLUMN question SET DEFAULT nextval('quiz_questsions_question_seq'::regclass);
 
 
 --
@@ -482,7 +482,7 @@ SELECT pg_catalog.setval('questions_id_seq', 1, false);
 -- Data for Name: quiz_questsions; Type: TABLE DATA; Schema: public; Owner: scq
 --
 
-COPY quiz_questsions (quiz, index, id) FROM stdin;
+COPY quiz_questsions (index, id, question) FROM stdin;
 \.
 
 
@@ -494,10 +494,10 @@ SELECT pg_catalog.setval('quiz_questsions_id_seq', 1, false);
 
 
 --
--- Name: quiz_questsions_quiz_seq; Type: SEQUENCE SET; Schema: public; Owner: scq
+-- Name: quiz_questsions_question_seq; Type: SEQUENCE SET; Schema: public; Owner: scq
 --
 
-SELECT pg_catalog.setval('quiz_questsions_quiz_seq', 1, false);
+SELECT pg_catalog.setval('quiz_questsions_question_seq', 1, false);
 
 
 --
@@ -563,11 +563,11 @@ ALTER TABLE ONLY questions
 
 
 --
--- Name: quiz_questsions_id_pk; Type: CONSTRAINT; Schema: public; Owner: scq
+-- Name: quiz_questsions_index_pk; Type: CONSTRAINT; Schema: public; Owner: scq
 --
 
 ALTER TABLE ONLY quiz_questsions
-    ADD CONSTRAINT quiz_questsions_id_pk PRIMARY KEY (id);
+    ADD CONSTRAINT quiz_questsions_index_pk PRIMARY KEY (index);
 
 
 --
@@ -601,13 +601,6 @@ CREATE UNIQUE INDEX device_api_tokens_token_uindex ON device_api_tokens USING bt
 
 
 --
--- Name: quiz_questsions_index_quiz_uindex; Type: INDEX; Schema: public; Owner: scq
---
-
-CREATE UNIQUE INDEX quiz_questsions_index_quiz_uindex ON quiz_questsions USING btree (index, quiz);
-
-
---
 -- Name: users_username_uindex; Type: INDEX; Schema: public; Owner: scq
 --
 
@@ -628,6 +621,14 @@ ALTER TABLE ONLY answers
 
 ALTER TABLE ONLY questions
     ADD CONSTRAINT questions_categories_id_fk FOREIGN KEY (category) REFERENCES categories(id);
+
+
+--
+-- Name: quiz_questsions_questions_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: scq
+--
+
+ALTER TABLE ONLY quiz_questsions
+    ADD CONSTRAINT quiz_questsions_questions_id_fk FOREIGN KEY (question) REFERENCES questions(id);
 
 
 --
