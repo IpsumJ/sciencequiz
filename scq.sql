@@ -40,7 +40,8 @@ SET default_with_oids = false;
 CREATE TABLE answers (
     answer text NOT NULL,
     answers integer NOT NULL,
-    id integer NOT NULL
+    id integer NOT NULL,
+    correct boolean NOT NULL
 );
 
 
@@ -408,7 +409,7 @@ ALTER TABLE ONLY users ALTER COLUMN id SET DEFAULT nextval('users_id_seq'::regcl
 -- Data for Name: answers; Type: TABLE DATA; Schema: public; Owner: scq
 --
 
-COPY answers (answer, answers, id) FROM stdin;
+COPY answers (answer, answers, id, correct) FROM stdin;
 \.
 
 
