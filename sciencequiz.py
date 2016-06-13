@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import psycopg2
 import psycopg2.extensions
 import logging
@@ -39,8 +39,11 @@ def manage_questions():
     return render_template('manage/questions.html')
 
 
-@app.route('/manage/questions/new')
+@app.route('/manage/questions/new', methods=['GET', 'POST'])
 def manage_questions_new():
+    if request.method == 'POST':
+        db_exec("INSERT INTO questions (question, category) VALUES (%s, %s)",
+                  (request.form['question'], request.form['category']), True)
     res = db_exec("SELECT * FROM categories")
     categories = []
     for r in res:
@@ -48,12 +51,15 @@ def manage_questions_new():
     return render_template('manage/questions_new.html', categories=categories)
 
 
-def db_exec(query, params=None):
+def db_exec(query, params=None, insert=False):
     if DEBUG:
         cur = conn.cursor(cursor_factory=LoggingCursor)
     else:
         cur = conn.cursor()
     cur.execute(query, params)
+    if insert:
+        cur.close()
+        return
     res = cur.fetchall()
     cur.close()
     return res
