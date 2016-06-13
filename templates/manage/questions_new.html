@@ -1,0 +1,54 @@
+{% extends "manage/manage_nav.html" %}
+{% block title %}
+    Neue Frage
+{% endblock %}
+{% block body %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Frage</h3>
+        </div>
+
+        <div class="panel-body">
+            <form method="post">
+                <table class="form-table">
+                    <tr>
+                        <td><label>Frage</label></td>
+                        <td><textarea class="form-control" name="question"></textarea></td>
+                    </tr>
+                    <tr>
+                        <td><label>Kategorie</label></td>
+                        <td><select class="form-control" name="category">
+                            <option vlaue="0">Bitte wählen...</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select></td>
+                    </tr>
+                    <tr>
+                        <td><label>A</label></td>
+                        <td><textarea class="form-control" name="ansA"></textarea></td>
+                    </tr>
+                    <tr>
+                        <td><label>B</label></td>
+                        <td><textarea class="form-control" name="ansB"></textarea></td>
+                    </tr>
+                    <tr>
+                        <td><label>C</label></td>
+                        <td><textarea class="form-control" name="ansC"></textarea></td>
+                    </tr>
+                    <tr>
+                        <td><label>D</label></td>
+                        <td><textarea class="form-control" name="ansD"></textarea></td>
+                    </tr>
+                    <tr>
+                        <td>
+                        </td>
+                        <td>
+                            <button type="submit" class="btn btn-success pull-right">Anlegen</button>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </div>
+{% endblock %}

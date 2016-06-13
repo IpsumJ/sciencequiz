@@ -1,4 +1,22 @@
 from flask import Flask, render_template
+import psycopg2
+import psycopg2.extensions
+import logging
+
+DEBUG = True
+
+
+class LoggingCursor(psycopg2.extensions.cursor):
+    def execute(self, sql, args=None):
+        logger = logging.getLogger('sql_debug')
+        logger.info(self.mogrify(sql, args))
+
+        try:
+            psycopg2.extensions.cursor.execute(self, sql, args)
+        except Exception as exc:
+            logger.error("%s: %s" % (exc.__class__.__name__, exc))
+            raise
+
 
 app = Flask(__name__)
 
@@ -7,11 +25,39 @@ app = Flask(__name__)
 def science_quiz():
     return render_template('main.html', title="ScienceQuiz")
 
+
 @app.route('/manage')
 def manage():
-    return render_template('manage.html')
+    return render_template('manage/manage.html')
+
+
+@app.route('/manage/questions')
+def manage_questions():
+    res = db_exec("SELECT * FROM questions LIMIT 10")
+    print(res)
+    return render_template('manage/questions.html')
+
+
+@app.route('/manage/questions/new')
+def manage_questions_new():
+    return render_template('manage/questions_new.html')
+
+
+def db_exec(query, params=None):
+    if DEBUG:
+        cur = conn.cursor(cursor_factory=LoggingCursor)
+    else:
+        cur = conn.cursor()
+    cur.execute(query, params)
+    res = cur.fetchall()
+    cur.close()
+    return res
 
 
 if __name__ == '__main__':
-    app.debug = True
+    global DEBUG
+    conn = psycopg2.connect(database="scq", user="scq", password="scq", host="127.0.0.1", port=5433)
+    conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+
+    app.debug = DEBUG
     app.run(threaded=True)
