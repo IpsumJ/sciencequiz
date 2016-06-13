@@ -1,0 +1,19 @@
+{% extends "manage/manage_nav.html" %}
+{% block title %}
+    Kategorien
+{% endblock %}
+{% block body %}
+    <table class="table table-striped">
+        <tr>
+            <th>Kategorie</th>
+            <th></th>
+        </tr>
+        {% for c in categories %}
+            <tr>
+                <td>{{ c.name }}</td>
+                <td><a href="/manage/catgeory/{{ c.id }}/delete" class="btn btn-danger pull-right"><span
+                        class="glyphicon glyphicon-trash" aria-hidden="true"></span></a></td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

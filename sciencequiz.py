@@ -39,16 +39,17 @@ def manage_questions():
     return render_template('manage/questions.html')
 
 
+@app.route('/manage/categories')
+def manage_categories():
+    return render_template('manage/categories.html', categories=fetch_all_categories())
+
+
 @app.route('/manage/questions/new', methods=['GET', 'POST'])
 def manage_questions_new():
     if request.method == 'POST':
         db_exec("INSERT INTO questions (question, category) VALUES (%s, %s)",
-                  (request.form['question'], request.form['category']), True)
-    res = db_exec("SELECT * FROM categories")
-    categories = []
-    for r in res:
-        categories.append(Category(*r))
-    return render_template('manage/questions_new.html', categories=categories)
+                (request.form['question'], request.form['category']), True)
+    return render_template('manage/questions_new.html', categories=fetch_all_categories())
 
 
 def db_exec(query, params=None, insert=False):
@@ -63,6 +64,14 @@ def db_exec(query, params=None, insert=False):
     res = cur.fetchall()
     cur.close()
     return res
+
+
+def fetch_all_categories():
+    res = db_exec("SELECT * FROM categories")
+    categories = []
+    for r in res:
+        categories.append(Category(*r))
+    return categories
 
 
 if __name__ == '__main__':
