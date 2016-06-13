@@ -2,6 +2,7 @@ from flask import Flask, render_template
 import psycopg2
 import psycopg2.extensions
 import logging
+from model import *
 
 DEBUG = True
 
@@ -40,7 +41,11 @@ def manage_questions():
 
 @app.route('/manage/questions/new')
 def manage_questions_new():
-    return render_template('manage/questions_new.html')
+    res = db_exec("SELECT * FROM categories")
+    categories = []
+    for r in res:
+        categories.append(Category(*r))
+    return render_template('manage/questions_new.html', categories=categories)
 
 
 def db_exec(query, params=None):
