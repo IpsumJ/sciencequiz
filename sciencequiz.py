@@ -61,7 +61,7 @@ def fetch_all_categories():
     res = db.execute("SELECT * FROM categories")
     categories = []
     for r in res:
-        categories.append(Category(*r, db=db))
+        categories.append(Category(**r, db=db))
     return categories
 
 
