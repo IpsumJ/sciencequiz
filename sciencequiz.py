@@ -55,6 +55,7 @@ def manage_questions_new():
                    (question, request.form['ansC'].strip(), correct == 'c'), True)
         db.execute("INSERT INTO answers (answers, answer, correct) VALUES (%s, %s, %s)",
                    (question, request.form['ansD'].strip(), correct == 'd'), True)
+        return redirect('/manage/questions/new')
     return render_template('manage/questions_new.html', categories=fetch_all_categories())
 
 
