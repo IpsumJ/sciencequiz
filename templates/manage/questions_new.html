@@ -13,12 +13,13 @@
             <form method="post">
                 <table class="form-table">
                     <tr>
-                        <td><label>Frage</label></td>
-                        <td><textarea class="form-control" name="question">{% if q %}{{ q.question }}{% endif %}</textarea></td>
+                        <th><label>Frage</label></th>
+                        <td colspan="2"><textarea class="form-control" name="question">{% if q %}
+                            {{ q.question }}{% endif %}</textarea></td>
                     </tr>
                     <tr>
-                        <td><label>Kategorie</label></td>
-                        <td><select class="form-control" name="category">
+                        <th><label>Kategorie</label></th>
+                        <td colspan="2"><select class="form-control" name="category">
                             <option value="0" name="category">Bitte wählen...</option>
                             {% for cat in categories %}
                                 <option value="{{ cat.id }}"
@@ -27,25 +28,33 @@
                         </select></td>
                     </tr>
                     <tr>
-                        <td><label>A</label></td>
-                        <td><textarea class="form-control" name="ansA">{% if q %}{{ q.answers[0].answer }}{% endif %}</textarea></td>
+                        <th><label>A</label></th>
+                        <td><textarea class="form-control" name="ansA">{% if q %}
+                            {{ q.answers[0].answer }}{% endif %}</textarea></td>
+                        <td><input type="radio" checked name="correct" value="a"/></td>
                     </tr>
                     <tr>
-                        <td><label>B</label></td>
-                        <td><textarea class="form-control" name="ansB">{% if q %}{{ q.answers[1].answer }}{% endif %}</textarea></td>
+                        <th><label>B</label></th>
+                        <td><textarea class="form-control" name="ansB">{% if q %}
+                            {{ q.answers[1].answer }}{% endif %}</textarea></td>
+                        <td><input type="radio" name="correct" value="b"/></td>
                     </tr>
                     <tr>
-                        <td><label>C</label></td>
-                        <td><textarea class="form-control" name="ansC">{% if q %}{{ q.answers[2].answer }}{% endif %}</textarea></td>
+                        <th><label>C</label></th>
+                        <td><textarea class="form-control" name="ansC">{% if q %}
+                            {{ q.answers[2].answer }}{% endif %}</textarea></td>
+                        <td><input type="radio" name="correct" value="c"/></td>
                     </tr>
                     <tr>
-                        <td><label>D</label></td>
-                        <td><textarea class="form-control" name="ansD">{% if q %}{{ q.answers[3].answer }}{% endif %}</textarea></td>
+                        <th><label>D</label></th>
+                        <td><textarea class="form-control" name="ansD">{% if q %}
+                            {{ q.answers[3].answer }}{% endif %}</textarea></td>
+                        <td><input type="radio" name="correct" value="d"/></td>
                     </tr>
                     <tr>
                         <td>
                         </td>
-                        <td>
+                        <td colspan="2">
                             <button type="submit" class="btn btn-success pull-right">
                                 {% if not q %}Anlegen{% else %}Bearbeiten{% endif %}</button>
                         </td>

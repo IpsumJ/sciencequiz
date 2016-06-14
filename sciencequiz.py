@@ -39,27 +39,31 @@ def delete_category(category):
     return redirect('/manage/categories')
 
 
-# TODO: Correct answer + guess question
+# TODO: guess question
 @app.route('/manage/questions/new', methods=['GET', 'POST'])
 def manage_questions_new():
     if request.method == 'POST' and request.form['ansA'].strip() and request.form['ansB'].strip() and \
             request.form['ansC'].strip() and request.form['ansD'].strip():
         question = db.execute("INSERT INTO questions (question, category) VALUES (%s, %s)",
                               (request.form['question'], request.form['category']), True)
+        correct = request.form['correct']
         db.execute("INSERT INTO answers (answers, answer, correct) VALUES (%s, %s, %s)",
-                   (question, request.form['ansA'].strip(), False), True)
+                   (question, request.form['ansA'].strip(), correct == 'a'), True)
         db.execute("INSERT INTO answers (answers, answer, correct) VALUES (%s, %s, %s)",
-                   (question, request.form['ansB'].strip(), False), True)
+                   (question, request.form['ansB'].strip(), correct == 'b'), True)
         db.execute("INSERT INTO answers (answers, answer, correct) VALUES (%s, %s, %s)",
-                   (question, request.form['ansC'].strip(), False), True)
+                   (question, request.form['ansC'].strip(), correct == 'c'), True)
         db.execute("INSERT INTO answers (answers, answer, correct) VALUES (%s, %s, %s)",
-                   (question, request.form['ansD'].strip(), False), True)
+                   (question, request.form['ansD'].strip(), correct == 'd'), True)
     return render_template('manage/questions_new.html', categories=fetch_all_categories())
+
 
 @app.route('/manage/question/<question>/edit', methods=['GET', 'POST'])
 def edit_question(question):
     question = int(question)
-    return render_template('manage/questions_new.html', q=Question.get_by_id(question, db), categories=fetch_all_categories())
+    return render_template('manage/questions_new.html', q=Question.get_by_id(question, db),
+                           categories=fetch_all_categories())
+
 
 def fetch_all_categories():
     res = db.execute("SELECT * FROM categories")
