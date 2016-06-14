@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect
 from model import *
 from db import *
-
+# TODO!!!: Error handling
 DEBUG = True
 
 app = Flask(__name__)
