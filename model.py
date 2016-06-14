@@ -23,6 +23,9 @@ class Category(object):
 
 
 class Answer(object):
-    def __init__(self, correct, answer):
+    def __init__(self, id, correct, answer, answers):
         self.correct = correct
         self.answer = answer
+        self.answers = answers
+        self.id = id
+
