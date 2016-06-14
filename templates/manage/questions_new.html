@@ -31,25 +31,25 @@
                         <th><label>A</label></th>
                         <td><textarea class="form-control" name="ansA">{% if q %}
                             {{ q.answers[0].answer }}{% endif %}</textarea></td>
-                        <td><input type="radio" checked name="correct" value="a"/></td>
+                        <td><input type="radio" {% if not q or q.answers[0].correct %}checked{% endif %} name="correct" value="a"/></td>
                     </tr>
                     <tr>
                         <th><label>B</label></th>
                         <td><textarea class="form-control" name="ansB">{% if q %}
                             {{ q.answers[1].answer }}{% endif %}</textarea></td>
-                        <td><input type="radio" name="correct" value="b"/></td>
+                        <td><input type="radio" {% if q and q.answers[1].correct %}checked{% endif %} name="correct" value="b"/></td>
                     </tr>
                     <tr>
                         <th><label>C</label></th>
                         <td><textarea class="form-control" name="ansC">{% if q %}
                             {{ q.answers[2].answer }}{% endif %}</textarea></td>
-                        <td><input type="radio" name="correct" value="c"/></td>
+                        <td><input type="radio" {% if q and q.answers[2].correct %}checked{% endif %} name="correct" value="c"/></td>
                     </tr>
                     <tr>
                         <th><label>D</label></th>
                         <td><textarea class="form-control" name="ansD">{% if q %}
                             {{ q.answers[3].answer }}{% endif %}</textarea></td>
-                        <td><input type="radio" name="correct" value="d"/></td>
+                        <td><input type="radio" {% if q and q.answers[3].correct %}checked{% endif %} name="correct" value="d"/></td>
                     </tr>
                     <tr>
                         <td>
