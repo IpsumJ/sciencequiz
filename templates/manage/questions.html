@@ -3,4 +3,19 @@
     Fragen
 {% endblock %}
 {% block body %}
+    {% for c in categories %}
+        <div class="panel panel-default">
+            <div class="panel-heading">{{ c.name }}</div>
+            <div class="panel-body">
+                <p>...</p>
+            </div>
+            <table class="table">
+                {% for q in c.get_all_questions() %}
+                    <tr>
+                        <td>q</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    {% endfor %}
 {% endblock %}
