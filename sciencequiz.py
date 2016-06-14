@@ -49,10 +49,11 @@ def manage_categories():
 
 
 # TODO: CSRF or so...
-@app.route('/manage/category/<category>/delete')
+@app.route('/manage/category/<category>',  methods=['POST'])
 def delete_category(category):
-    category = int(category)
-    db_exec("DELETE FROM categories WHERE id=(%s)", (category,), True)
+    if 'delete' in request.form:
+        category = int(category)
+        db_exec("DELETE FROM categories WHERE id=(%s)", (category,), True)
     return redirect('/manage/categories')
 
 
