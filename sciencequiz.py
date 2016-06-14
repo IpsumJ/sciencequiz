@@ -49,7 +49,7 @@ def manage_categories():
 
 
 # TODO: CSRF or so...
-@app.route('/manage/category/<category>',  methods=['POST'])
+@app.route('/manage/category/<category>', methods=['POST'])
 def delete_category(category):
     if 'delete' in request.form:
         category = int(category)
@@ -57,11 +57,21 @@ def delete_category(category):
     return redirect('/manage/categories')
 
 
+# TODO: Correct answer + guess question
 @app.route('/manage/questions/new', methods=['GET', 'POST'])
 def manage_questions_new():
-    if request.method == 'POST':
-        db_exec("INSERT INTO questions (question, category) VALUES (%s, %s)",
-                (request.form['question'], request.form['category']), True)
+    if request.method == 'POST' and request.form['ansA'].strip() and request.form['ansB'].strip() and \
+            request.form['ansC'].strip() and request.form['ansD'].strip():
+        question = db_exec("INSERT INTO questions (question, category) VALUES (%s, %s)",
+                           (request.form['question'], request.form['category']), True)
+        db_exec("INSERT INTO answers (answers, answer, correct) VALUES (%s, %s, %s)",
+                (question, request.form['ansA'].strip(), False), True)
+        db_exec("INSERT INTO answers (answers, answer, correct) VALUES (%s, %s, %s)",
+                (question, request.form['ansB'].strip(), False), True)
+        db_exec("INSERT INTO answers (answers, answer, correct) VALUES (%s, %s, %s)",
+                (question, request.form['ansC'].strip(), False), True)
+        db_exec("INSERT INTO answers (answers, answer, correct) VALUES (%s, %s, %s)",
+                (question, request.form['ansD'].strip(), False), True)
     return render_template('manage/questions_new.html', categories=fetch_all_categories())
 
 
@@ -70,10 +80,13 @@ def db_exec(query, params=None, insert=False):
         cur = conn.cursor(cursor_factory=LoggingCursor)
     else:
         cur = conn.cursor()
+    if insert:
+        query += ' RETURNING id'
     cur.execute(query, params)
     if insert:
+        res = cur.fetchone()[0]
         cur.close()
-        return
+        return res
     res = cur.fetchall()
     cur.close()
     return res
