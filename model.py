@@ -5,6 +5,11 @@ class Question(object):
         self.category = Category.get_by_id(category, db)
         self.answers = [Answer(**a) for a in db.execute("SELECT * FROM answers WHERE answers = %s", (self.id,))]
 
+    @staticmethod
+    def get_by_id(id, db):
+        res = db.execute("SELECT * FROM questions WHERE id = %s", (id,))
+        return Question(**res[0], db=db)
+
 
 class Category(object):
     def __init__(self, id, name, db):
@@ -28,4 +33,3 @@ class Answer(object):
         self.answer = answer
         self.answers = answers
         self.id = id
-

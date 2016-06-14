@@ -9,7 +9,7 @@
             <table class="table">
                 {% for q in c.get_all_questions() %}
                     <tr>
-                        <td>{{ q.question }}</td>
+                        <td><a href="/manage/question/{{ q.id }}/edit">{{ q.question }}</a></td>
                     </tr>
                 {% endfor %}
             </table>

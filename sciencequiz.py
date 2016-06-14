@@ -56,6 +56,10 @@ def manage_questions_new():
                    (question, request.form['ansD'].strip(), False), True)
     return render_template('manage/questions_new.html', categories=fetch_all_categories())
 
+@app.route('/manage/question/<question>/edit', methods=['GET', 'POST'])
+def edit_question(question):
+    question = int(question)
+    return render_template('manage/questions_new.html', q=Question.get_by_id(question, db), categories=fetch_all_categories())
 
 def fetch_all_categories():
     res = db.execute("SELECT * FROM categories")

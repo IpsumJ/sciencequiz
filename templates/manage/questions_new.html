@@ -1,6 +1,6 @@
 {% extends "manage/manage_nav.html" %}
 {% block title %}
-    Neue Frage
+    {% if q %}Frage bearbeiten{% else %}Neue Frage {% endif %}
 {% endblock %}
 {% block body %}
     <div class="panel panel-default">
@@ -13,38 +13,40 @@
                 <table class="form-table">
                     <tr>
                         <td><label>Frage</label></td>
-                        <td><textarea class="form-control" name="question"></textarea></td>
+                        <td><textarea class="form-control" name="question">{% if q %}{{ q.question }}{% endif %}</textarea></td>
                     </tr>
                     <tr>
                         <td><label>Kategorie</label></td>
                         <td><select class="form-control" name="category">
                             <option value="0" name="category">Bitte wählen...</option>
                             {% for cat in categories %}
-                                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                                <option value="{{ cat.id }}"
+                                        {% if q and cat.id == q.category.id %}selected{% endif %}>{{ cat.name }}</option>
                             {% endfor %}
                         </select></td>
                     </tr>
                     <tr>
                         <td><label>A</label></td>
-                        <td><textarea class="form-control" name="ansA"></textarea></td>
+                        <td><textarea class="form-control" name="ansA">{% if q %}{{ q.answers[0].answer }}{% endif %}</textarea></td>
                     </tr>
                     <tr>
                         <td><label>B</label></td>
-                        <td><textarea class="form-control" name="ansB"></textarea></td>
+                        <td><textarea class="form-control" name="ansB">{% if q %}{{ q.answers[1].answer }}{% endif %}</textarea></td>
                     </tr>
                     <tr>
                         <td><label>C</label></td>
-                        <td><textarea class="form-control" name="ansC"></textarea></td>
+                        <td><textarea class="form-control" name="ansC">{% if q %}{{ q.answers[2].answer }}{% endif %}</textarea></td>
                     </tr>
                     <tr>
                         <td><label>D</label></td>
-                        <td><textarea class="form-control" name="ansD"></textarea></td>
+                        <td><textarea class="form-control" name="ansD">{% if q %}{{ q.answers[3].answer }}{% endif %}</textarea></td>
                     </tr>
                     <tr>
                         <td>
                         </td>
                         <td>
-                            <button type="submit" class="btn btn-success pull-right">Anlegen</button>
+                            <button type="submit" class="btn btn-success pull-right">
+                                {% if not q %}Anlegen{% else %}Bearbeiten{% endif %}</button>
                         </td>
                     </tr>
                 </table>
