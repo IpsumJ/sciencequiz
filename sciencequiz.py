@@ -84,6 +84,9 @@ def edit_question(question):
     return render_template('manage/questions_new.html', q=Question.get_by_id(question, db),
                            categories=fetch_all_categories())
 
+@app.route('/quiz', methods=['GET', 'POST'])
+def quiz():
+    return render_template('try.html')
 
 def fetch_all_categories():
     res = db.execute("SELECT * FROM categories")

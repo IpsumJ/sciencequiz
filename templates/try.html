@@ -1,4 +1,58 @@
 {% extends "base.html" %}
 {% block body %}
+<p class="question">Layout test. Wähle eine Antwort und eine zufällige Lösung erscheint nach 2 Skunden. Animations CSS only.</p>
+<div class="answerbox">
+<div id="a" class="answer">
+<div class="ansletter">A</div>
+<div class="text">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren,</div>
+</div>
+<div id="b" class="answer">
+<div class="ansletter">B</div>
+<div class="text">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam</div>
+</div>
+<div id="c" class="answer">
+<div class="ansletter">C</div>
+<div class="text">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren,</div>
+</div>
+<div id="d" class="answer">
+<div class="ansletter">D</div>
+<div class="text">Lorem ipsum</div>
+</div>
+</div>
+<script type="text/javascript" src="static/js/jquery.min.js"></script>
+<script type="text/javascript">
+var selected = false;
+$(".answer").each(function(i, v) {
+	$(v).hover(function() {
+		if(!selected)
+	$(v).find('.ansletter').toggleClass("highlight");
+	});
+});
 
+$(".answer").each(function(i, v) {
+	$(v).on('click', function() {
+		if(!selected) {
+		$(v).find('.ansletter').addClass("permahighlight");
+		$(v).children().each(function(i,k) {$(k).addClass("selected");});
+		selected = true;
+		window.setTimeout(function() {
+			var rand = Math.floor(Math.random() * 4);
+			var chars = ['a', 'b', 'c', 'd'];
+			if($(".selected").parent().attr("id") != chars[rand]) {
+				var ele = $(".selected").parent().find(".ansletter");
+				ele.removeClass();
+				ele.attr("class", "ansletter wrong");
+				var eles = $("#"+chars[rand]).find(".ansletter");
+				eles.removeClass();
+				eles.attr("class", "ansletter correct");
+			} else {
+				var eles = $("#"+chars[rand]).find(".ansletter");
+				eles.removeClass();
+				eles.attr("class", "ansletter correctchoise");
+			}
+		}, 2000);
+		}
+	});
+});
+</script>
 {% endblock %}
