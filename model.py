@@ -6,6 +6,7 @@ class Question(object):
         self.id = id
         self.question = question
         self.category = Category.get_by_id(category, db)
+        self.answers = [Answer(**a) for a in db.execute("SELECT * FROM answers WHERE answers = %s", (self.id,))]
 
 
 class Category(object):
@@ -24,3 +25,9 @@ class Category(object):
         res = db.execute("SELECT * FROM categories WHERE id = %s", (cat,))
         print(res)
         return Category(**res[0], db=db)
+
+
+class Answer(object):
+    def __init__(self, correct, answer):
+        self.correct = correct
+        self.answer = answer
