@@ -5,13 +5,27 @@
 {% block body %}
     <table class="table table-striped">
         <tr>
+            <th>Neue Kategorie</th>
+            <th></th>
+        </tr>
+        <form method="post">
+            <tr>
+                <td>
+                    <input type="text" class="form-control" name="newcategory"/>
+                </td>
+                <td>
+                    <button type="submit" class="btn btn-success pull-right">Anlegen</button>
+                </td>
+            </tr>
+        </form>
+        <tr>
             <th>Kategorie</th>
             <th></th>
         </tr>
         {% for c in categories %}
             <tr>
                 <td>{{ c.name }}</td>
-                <td><a href="/manage/catgeory/{{ c.id }}/delete" class="btn btn-danger pull-right"><span
+                <td><a href="/manage/category/{{ c.id }}/delete" class="btn btn-danger pull-right"><span
                         class="glyphicon glyphicon-trash" aria-hidden="true"></span></a></td>
             </tr>
         {% endfor %}

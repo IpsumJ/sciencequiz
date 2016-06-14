@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 import psycopg2
 import psycopg2.extensions
 import logging
@@ -10,6 +10,7 @@ DEBUG = True
 class LoggingCursor(psycopg2.extensions.cursor):
     def execute(self, sql, args=None):
         logger = logging.getLogger('sql_debug')
+        print(args)
         logger.info(self.mogrify(sql, args))
 
         try:
@@ -39,9 +40,20 @@ def manage_questions():
     return render_template('manage/questions.html')
 
 
-@app.route('/manage/categories')
+@app.route('/manage/categories', methods=['GET', 'POST'])
 def manage_categories():
+    if request.method == 'POST':
+        print(type(request.form['newcategory']))
+        db_exec("INSERT INTO categories (name) VALUES (%s)", (request.form['newcategory'],), True)
     return render_template('manage/categories.html', categories=fetch_all_categories())
+
+
+# TODO: CSRF or so...
+@app.route('/manage/category/<category>/delete')
+def delete_category(category):
+    category = int(category)
+    db_exec("DELETE FROM categories WHERE id=(%s)", (category,), True)
+    return redirect('/manage/categories')
 
 
 @app.route('/manage/questions/new', methods=['GET', 'POST'])
