@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect
 from model import *
 from db import *
+
 # TODO!!!: Error handling
 DEBUG = True
 
@@ -64,8 +65,22 @@ def edit_question(question):
     question = int(question)
     if request.method == 'POST':
         if 'delete' in request.form:
-            db.execute("DELETE FROM questions WHERE id = %s", (question,), None)
+            db.execute("DELETE questions WHERE id = %s", (question,), None)
             return redirect('/manage/questions')
+
+        correct = request.form['correct']
+        db.execute("UPDATE questions SET question = %s, category = %s WHERE id = %s",
+                   (request.form['question'], request.form['category'], question), True)
+        db.execute("UPDATE answers set answer = %s, correct = %s WHERE id=%s",
+                   (request.form['ansA'].strip(), correct == 'a', request.form['aid']), True)
+        db.execute("UPDATE answers set answer = %s, correct = %s WHERE id=%s",
+                   (request.form['ansB'].strip(), correct == 'b', request.form['bid']), True)
+        db.execute("UPDATE answers set answer = %s, correct = %s WHERE id=%s",
+                   (request.form['ansC'].strip(), correct == 'c', request.form['cid']), True)
+        db.execute("UPDATE answers set answer = %s, correct = %s WHERE id=%s",
+                   (request.form['ansD'].strip(), correct == 'd', request.form['did']), True)
+
+        return redirect('/manage/question/{}/edit'.format(question))
     return render_template('manage/questions_new.html', q=Question.get_by_id(question, db),
                            categories=fetch_all_categories())
 
