@@ -4,7 +4,8 @@
     Fragen
 {% endblock %}
 {% block body %}
-    <div class="pd"><a href="/manage/questions/new" class="btn btn-success pull-right">Neue Frage anlegen</a><span class="clearfix"></span> </div>
+    <div class="pd"><a href="/manage/questions/new" class="btn btn-success pull-right">Neue Frage anlegen</a><span
+            class="clearfix"></span></div>
     {% for c in categories %}
         <div class="panel panel-default">
             <div class="panel-heading">{{ c.name }}</div>
@@ -12,6 +13,12 @@
                 {% for q in c.get_all_questions() %}
                     <tr>
                         <td><a href="/manage/question/{{ q.id }}/edit">{{ q.question }}</a></td>
+                        <td>
+                            <form method="post" action="/manage/question/{{ q.id }}/edit">
+                                <button type="submit" name="delete" class="btn btn-danger pull-right"><span
+                                        class="glyphicon glyphicon-trash" aria-hidden="true"></span></button>
+                            </form>
+                        </td>
                     </tr>
                 {% endfor %}
             </table>

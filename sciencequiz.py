@@ -35,7 +35,7 @@ def manage_categories():
 def delete_category(category):
     if 'delete' in request.form:
         category = int(category)
-        db.execute("DELETE FROM categories WHERE id=(%s)", (category,), True)
+        db.execute("DELETE FROM categories WHERE id=(%s)", (category,), None)
     return redirect('/manage/categories')
 
 
@@ -61,6 +61,10 @@ def manage_questions_new():
 @app.route('/manage/question/<question>/edit', methods=['GET', 'POST'])
 def edit_question(question):
     question = int(question)
+    if request.method == 'POST':
+        if 'delete' in request.form:
+            db.execute("DELETE FROM questions WHERE id = %s", (question,), None)
+            return redirect('/manage/questions')
     return render_template('manage/questions_new.html', q=Question.get_by_id(question, db),
                            categories=fetch_all_categories())
 

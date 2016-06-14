@@ -18,12 +18,14 @@ class PGSQLConnection(object):
             cur = self.conn.cursor()
         if insert:
             query += ' RETURNING id'
+        res = None
         cur.execute(query, params)
         if insert:
             res = cur.fetchone()['id']
             cur.close()
             return res
-        res = cur.fetchall()
+        if insert is not None:
+            res = cur.fetchall()
         cur.close()
         return res
 
