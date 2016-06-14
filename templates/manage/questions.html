@@ -3,6 +3,7 @@
     Fragen
 {% endblock %}
 {% block body %}
+    <div class="pd"><a href="/manage/questions/new" class="btn btn-success pull-right">Neue Frage anlegen</a><span class="clearfix"></span> </div>
     {% for c in categories %}
         <div class="panel panel-default">
             <div class="panel-heading">{{ c.name }}</div>

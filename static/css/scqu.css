@@ -188,3 +188,7 @@ body {
 .form-table td {
 	padding-bottom: 5px;
 }
+
+.pd {
+    padding: 10px 0 10px 0;
+}
