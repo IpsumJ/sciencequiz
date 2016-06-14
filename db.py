@@ -20,7 +20,7 @@ class PGSQLConnection(object):
             query += ' RETURNING id'
         cur.execute(query, params)
         if insert:
-            res = cur.fetchone()[0]
+            res = cur.fetchone()['id']
             cur.close()
             return res
         res = cur.fetchall()
