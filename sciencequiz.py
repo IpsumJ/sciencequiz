@@ -1,11 +1,27 @@
 from flask import Flask, render_template, request, redirect
 from model import *
 from db import *
+from beaker.middleware import SessionMiddleware
 
 # TODO!!!: Error handling
 DEBUG = True
 
+session_opts = {
+    'session.type': 'file',
+    'session.url': '127.0.0.1:5000',
+    'session.data_dir': './cache',
+}
+
 app = Flask(__name__)
+
+
+@app.context_processor
+def inject_user():
+    s = request.environ['beaker.session']
+    u = None
+    if 'login' in s:
+        u = s['login']
+    return dict(user=u)
 
 
 @app.route('/')
@@ -84,9 +100,11 @@ def edit_question(question):
     return render_template('manage/questions_new.html', q=Question.get_by_id(question, db),
                            categories=fetch_all_categories())
 
+
 @app.route('/quiz', methods=['GET', 'POST'])
 def quiz():
     return render_template('try.html')
+
 
 def fetch_all_categories():
     res = db.execute("SELECT * FROM categories")
@@ -99,5 +117,6 @@ def fetch_all_categories():
 if __name__ == '__main__':
     global DEBUG, db
     db = PGSQLConnection(database="scq", user="scq", password="scq", host="localhost", port=5433)
+    app.wsgi_app = SessionMiddleware(app.wsgi_app, session_opts)
     app.debug = DEBUG
     app.run(threaded=True)
