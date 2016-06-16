@@ -4,11 +4,16 @@ class Question(object):
         self.question = question
         self.category = Category.get_by_id(category, db)
         self.answers = [Answer(**a) for a in db.execute("SELECT * FROM answers WHERE answers = %s", (self.id,))]
+        self.db = db
 
     @staticmethod
     def get_by_id(id, db):
         res = db.execute("SELECT * FROM questions WHERE id = %s", (id,))
         return Question(**res[0], db=db)
+
+    def get_quizes(self):
+        return [Quiz.get_by_id(res['quiz'], db=self.db) for res in
+                self.db.execute("SELECT quiz FROM quiz_questions WHERE question=%s", (self.id,))]
 
 
 class Category(object):
