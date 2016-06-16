@@ -12,7 +12,10 @@
             <table class="table">
                 {% for q in c.get_all_questions() %}
                     <tr>
-                        <td><a href="/manage/question/{{ q.id }}/edit">{{ q.question }}</a></td>
+                        <td><a href="/manage/question/{{ q.id }}/edit">{{ q.question }}</a>
+                            {% for quiz in q.get_quizes() %}
+                                <span class="label {% if quiz.public %}label-danger{% else %}label-default{% endif %}"><a
+                                        href="/manage/arrange/{{ quiz.id }}">{{ quiz.name }}</a></span>{% endfor %}</td>
                         <td>
                             <form method="post" action="/manage/question/{{ q.id }}/edit">
                                 <button type="submit" name="delete" class="btn btn-danger pull-right"><span
@@ -27,7 +30,9 @@
                                 </button>
                                 <ul class="dropdown-menu">
                                     {% for quiz in quizes %}
-                                        <li><a href="/manage/arrange/{{ quiz.id }}/add?id={{ q.id }}">{{ quiz.name }}</a></li>
+                                        <li>
+                                            <a href="/manage/arrange/{{ quiz.id }}/add?id={{ q.id }}">{{ quiz.name }}</a>
+                                        </li>
                                     {% endfor %}
                                     <li role="separator" class="divider"></li>
                                     <li><a href="/manage/arrange/new">Neues Quiz anlegen</a></li>
