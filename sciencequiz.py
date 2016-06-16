@@ -3,6 +3,7 @@ from flask.ext.socketio import SocketIO, emit
 from model import *
 from db import *
 from beaker.middleware import SessionMiddleware
+import datetime
 
 # TODO!!!: Error handling
 DEBUG = True
@@ -24,6 +25,11 @@ def inject_user():
     if 'login' in s:
         u = s['login']
     return dict(user=u)
+
+
+@app.context_processor
+def inject_year():
+    return dict(year=datetime.datetime.now().year)
 
 
 @app.route('/')
@@ -132,6 +138,11 @@ def manage_arrange():
 
 @app.route('/manage/arrange/new', methods=['GET', 'POST'])
 def manage_arrange_new():
+    if request.method == 'POST':
+        year = int(request.args.get('year', datetime.datetime.now().year))
+        name = request.form['name']
+        db.execute("INSERT INTO quizes (name, year) VALUES(%s, %s)", (name, year), True)
+        return redirect("/manage/arrange")
     return render_template('manage/arrange_new.html')
 
 
