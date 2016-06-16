@@ -46,3 +46,8 @@ class Quiz(object):
     def get_by_id(quiz, db):
         res = db.execute("SELECT * FROM quizes WHERE id = %s", (quiz,))
         return Quiz(**res[0])
+
+    @staticmethod
+    def get_all(db):
+        res = db.execute("SELECT * FROM quizes")
+        return [Quiz(**r) for r in res]
