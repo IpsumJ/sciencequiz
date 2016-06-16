@@ -141,7 +141,8 @@ def manage_arrange_new():
     if request.method == 'POST':
         year = int(request.args.get('year', datetime.datetime.now().year))
         name = request.form['name']
-        db.execute("INSERT INTO quizes (name, year) VALUES(%s, %s)", (name, year), True)
+        db.execute("INSERT INTO quizes (name, year, public) VALUES(%s, %s, %s)", (name, year, 'public' in request.form),
+                   True)
         return redirect("/manage/arrange")
     return render_template('manage/arrange_new.html')
 
