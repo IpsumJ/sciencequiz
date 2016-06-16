@@ -213,17 +213,39 @@ ALTER SEQUENCE questions_id_seq OWNED BY questions.id;
 
 
 --
--- Name: quiz_questsions; Type: TABLE; Schema: public; Owner: scq
+-- Name: quiz_questions; Type: TABLE; Schema: public; Owner: scq
 --
 
-CREATE TABLE quiz_questsions (
+CREATE TABLE quiz_questions (
     index integer NOT NULL,
     id integer NOT NULL,
-    question integer NOT NULL
+    question integer NOT NULL,
+    quiz integer NOT NULL
 );
 
 
-ALTER TABLE quiz_questsions OWNER TO scq;
+ALTER TABLE quiz_questions OWNER TO scq;
+
+--
+-- Name: quiz_questions_quiz_seq; Type: SEQUENCE; Schema: public; Owner: scq
+--
+
+CREATE SEQUENCE quiz_questions_quiz_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE quiz_questions_quiz_seq OWNER TO scq;
+
+--
+-- Name: quiz_questions_quiz_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: scq
+--
+
+ALTER SEQUENCE quiz_questions_quiz_seq OWNED BY quiz_questions.quiz;
+
 
 --
 -- Name: quiz_questsions_id_seq; Type: SEQUENCE; Schema: public; Owner: scq
@@ -243,7 +265,7 @@ ALTER TABLE quiz_questsions_id_seq OWNER TO scq;
 -- Name: quiz_questsions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: scq
 --
 
-ALTER SEQUENCE quiz_questsions_id_seq OWNED BY quiz_questsions.id;
+ALTER SEQUENCE quiz_questsions_id_seq OWNED BY quiz_questions.id;
 
 
 --
@@ -264,7 +286,7 @@ ALTER TABLE quiz_questsions_question_seq OWNER TO scq;
 -- Name: quiz_questsions_question_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: scq
 --
 
-ALTER SEQUENCE quiz_questsions_question_seq OWNED BY quiz_questsions.question;
+ALTER SEQUENCE quiz_questsions_question_seq OWNED BY quiz_questions.question;
 
 
 --
@@ -383,14 +405,21 @@ ALTER TABLE ONLY questions ALTER COLUMN category SET DEFAULT nextval('questions_
 -- Name: id; Type: DEFAULT; Schema: public; Owner: scq
 --
 
-ALTER TABLE ONLY quiz_questsions ALTER COLUMN id SET DEFAULT nextval('quiz_questsions_id_seq'::regclass);
+ALTER TABLE ONLY quiz_questions ALTER COLUMN id SET DEFAULT nextval('quiz_questsions_id_seq'::regclass);
 
 
 --
 -- Name: question; Type: DEFAULT; Schema: public; Owner: scq
 --
 
-ALTER TABLE ONLY quiz_questsions ALTER COLUMN question SET DEFAULT nextval('quiz_questsions_question_seq'::regclass);
+ALTER TABLE ONLY quiz_questions ALTER COLUMN question SET DEFAULT nextval('quiz_questsions_question_seq'::regclass);
+
+
+--
+-- Name: quiz; Type: DEFAULT; Schema: public; Owner: scq
+--
+
+ALTER TABLE ONLY quiz_questions ALTER COLUMN quiz SET DEFAULT nextval('quiz_questions_quiz_seq'::regclass);
 
 
 --
@@ -440,11 +469,11 @@ ALTER TABLE ONLY questions
 
 
 --
--- Name: quiz_questsions_index_pk; Type: CONSTRAINT; Schema: public; Owner: scq
+-- Name: quiz_questions_id_pk; Type: CONSTRAINT; Schema: public; Owner: scq
 --
 
-ALTER TABLE ONLY quiz_questsions
-    ADD CONSTRAINT quiz_questsions_index_pk PRIMARY KEY (index);
+ALTER TABLE ONLY quiz_questions
+    ADD CONSTRAINT quiz_questions_id_pk PRIMARY KEY (id);
 
 
 --
@@ -478,6 +507,20 @@ CREATE UNIQUE INDEX device_api_tokens_token_uindex ON device_api_tokens USING bt
 
 
 --
+-- Name: quiz_questions_index_quiz_uindex; Type: INDEX; Schema: public; Owner: scq
+--
+
+CREATE UNIQUE INDEX quiz_questions_index_quiz_uindex ON quiz_questions USING btree (index, quiz);
+
+
+--
+-- Name: quiz_questions_question_quiz_uindex; Type: INDEX; Schema: public; Owner: scq
+--
+
+CREATE UNIQUE INDEX quiz_questions_question_quiz_uindex ON quiz_questions USING btree (question, quiz);
+
+
+--
 -- Name: quizes_year_name_uindex; Type: INDEX; Schema: public; Owner: scq
 --
 
@@ -508,10 +551,18 @@ ALTER TABLE ONLY questions
 
 
 --
+-- Name: quiz_questions_quizes_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: scq
+--
+
+ALTER TABLE ONLY quiz_questions
+    ADD CONSTRAINT quiz_questions_quizes_id_fk FOREIGN KEY (quiz) REFERENCES quizes(id);
+
+
+--
 -- Name: quiz_questsions_questions_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: scq
 --
 
-ALTER TABLE ONLY quiz_questsions
+ALTER TABLE ONLY quiz_questions
     ADD CONSTRAINT quiz_questsions_questions_id_fk FOREIGN KEY (question) REFERENCES questions(id);
 
 
