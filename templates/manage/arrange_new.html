@@ -1,7 +1,11 @@
 {% extends "manage/manage_nav.html" %}
 {% set active = 'arrange' %}
 {% block title %}
+    {% if q %}
+    Quiz bearbeiten
+    {% else %}
     Neues Quiz zusammenstellen
+    {% endif %}
 {% endblock %}
 {% block body %}
     <div class="panel panel-default">
@@ -14,15 +18,15 @@
                 <table class="form-table">
                     <tr>
                         <th><label>Name</label></th>
-                        <td colspan="2"><input type="text" class="form-control" name="name"/></td>
+                        <td colspan="2"><input type="text" class="form-control" name="name" {% if q %}value="{{ q.name }}"{% endif %}/></td>
                     </tr>
                     <tr>
                         <th><label>Jahr</label></th>
-                        <td colspan="2"><input type="number" class="form-control" name="year" placeholder="{{ year }}"/></td>
+                        <td colspan="2"><input type="number" class="form-control" name="year" placeholder="{{ year }}" {% if q %}value="{{ q.year }}"{% endif %}/></td>
                     </tr>
                     <tr>
                         <th><label>Öffentlich?</label></th>
-                        <td><input type="checkbox" name="public"/></td>
+                        <td><input type="checkbox" name="public" {% if q and q.public %}checked{% endif %}/></td>
                     </tr>
                     <tr>
                         <td>

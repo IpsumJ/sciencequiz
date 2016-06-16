@@ -150,6 +150,13 @@ def manage_arrange_new():
     return render_template('manage/arrange_new.html')
 
 
+@app.route('/manage/arrange/<quiz>', methods=['GET', 'POST'])
+def manage_arrange_edit(quiz):
+    if request.method == 'POST':
+        pass
+    return render_template('manage/arrange_new.html', q=Quiz.get_by_id(quiz, db))
+
+
 def fetch_all_categories():
     res = db.execute("SELECT * FROM categories")
     categories = []
