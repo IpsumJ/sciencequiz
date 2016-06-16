@@ -18,7 +18,7 @@
             <tr>
                 <td>{{ q.name }}</td>
                 <td>{{ q.year }}</td>
-                <td><input type="checkbox" class="disabled" {% if q.public %} checked{% endif %}/></td>
+                <td><input type="checkbox" {% if q.public %} checked{% endif %} disabled/></td>
                 <td>
                     <span class="pull-right">
                         <form method="post">
