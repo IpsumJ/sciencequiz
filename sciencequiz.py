@@ -115,6 +115,16 @@ def test_connect():
     print("Connected")
 
 
+@socketio.on('answer_selected', namespace='/quiz')
+def answer_selected(message):
+    ans = message['sel']
+    #answer is correct, do something
+    if ans == 'c':
+        pass
+
+    emit('answer_response', {'correct': 'c'})
+
+
 def fetch_all_categories():
     res = db.execute("SELECT * FROM categories")
     categories = []

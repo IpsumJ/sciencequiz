@@ -59,8 +59,21 @@
                 $('#b .text').html(msg.b);
                 $('#c .text').html(msg.c);
                 $('#d .text').html(msg.d);
-
-
+            });
+            socket.on('answer_response', function (msg) {
+                var corr = msg.correct;
+                if ($(".selected").parent().attr("id") != corr) {
+                    var ele = $(".selected").parent().find(".ansletter");
+                    ele.removeClass();
+                    ele.attr("class", "ansletter wrong");
+                    var eles = $("#" + corr).find(".ansletter");
+                    eles.removeClass();
+                    eles.attr("class", "ansletter correct");
+                } else {
+                    var eles = $("#" + corr).find(".ansletter");
+                    eles.removeClass();
+                    eles.attr("class", "ansletter correctchoise");
+                }
             });
 
             var selected = false;
@@ -78,25 +91,11 @@
                         $(v).children().each(function (i, k) {
                             $(k).addClass("selected");
                         });
-                        window.console.info($(v).context.id);
-                        socket.emit('answer_selected', {sel: $(v).context.id});
-                        selected = true;
                         window.setTimeout(function () {
-                            var rand = Math.floor(Math.random() * 4);
-                            var chars = ['a', 'b', 'c', 'd'];
-                            if ($(".selected").parent().attr("id") != chars[rand]) {
-                                var ele = $(".selected").parent().find(".ansletter");
-                                ele.removeClass();
-                                ele.attr("class", "ansletter wrong");
-                                var eles = $("#" + chars[rand]).find(".ansletter");
-                                eles.removeClass();
-                                eles.attr("class", "ansletter correct");
-                            } else {
-                                var eles = $("#" + chars[rand]).find(".ansletter");
-                                eles.removeClass();
-                                eles.attr("class", "ansletter correctchoise");
-                            }
-                        }, 2000);
+                            socket.emit('answer_selected', {sel: $(v).context.id});
+                        }, 1500);
+
+                        selected = true;
                     }
                 });
             });
