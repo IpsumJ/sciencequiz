@@ -181,7 +181,7 @@ body {
     clear: both;
 }
 
-.form-table {
+.form-table, .left-form-table {
 	width: 100%;
 }
 
