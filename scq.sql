@@ -476,6 +476,13 @@ CREATE UNIQUE INDEX device_api_tokens_token_uindex ON device_api_tokens USING bt
 
 
 --
+-- Name: quizes_year_name_uindex; Type: INDEX; Schema: public; Owner: scq
+--
+
+CREATE UNIQUE INDEX quizes_year_name_uindex ON quizes USING btree (year, name);
+
+
+--
 -- Name: users_username_uindex; Type: INDEX; Schema: public; Owner: scq
 --
 
