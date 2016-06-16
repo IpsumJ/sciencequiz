@@ -41,3 +41,8 @@ class Quiz(object):
         self.id = id
         self.name = name
         self.year = year
+
+    @staticmethod
+    def get_by_id(quiz, db):
+        res = db.execute("SELECT * FROM quizes WHERE id = %s", (quiz,))
+        return Quiz(**res[0])
