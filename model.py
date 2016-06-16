@@ -33,3 +33,11 @@ class Answer(object):
         self.answer = answer
         self.answers = answers
         self.id = id
+
+
+class Quiz(object):
+    def __init__(self, id, name, year, public):
+        self.public = public
+        self.id = id
+        self.name = name
+        self.year = year

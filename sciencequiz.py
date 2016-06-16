@@ -133,7 +133,7 @@ def answer_selected(message):
 
 @app.route('/manage/arrange', methods=['GET', 'POST'])
 def manage_arrange():
-    return render_template('manage/arrange.html')
+    return render_template('manage/arrange.html', questions=[Quiz(**q) for q in db.execute("SELECT * FROM quizes")])
 
 
 @app.route('/manage/arrange/new', methods=['GET', 'POST'])
