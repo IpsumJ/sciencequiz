@@ -44,7 +44,7 @@ def manage():
 
 @app.route('/manage/questions')
 def manage_questions():
-    return render_template('manage/questions.html', categories=fetch_all_categories(), quizes=Quiz.get_all(db))
+    return render_template('manage/questions.html', categories=Category.fetch_all(db), quizes=Quiz.get_all(db))
 
 
 @app.route('/manage/categories', methods=['GET', 'POST'])
@@ -52,7 +52,7 @@ def manage_categories():
     if request.method == 'POST':
         print(type(request.form['newcategory']))
         db.execute("INSERT INTO categories (name) VALUES (%s)", (request.form['newcategory'],), True)
-    return render_template('manage/categories.html', categories=fetch_all_categories())
+    return render_template('manage/categories.html', categories=Category.fetch_all(db))
 
 
 # TODO: CSRF or so...
@@ -81,7 +81,7 @@ def manage_questions_new():
         db.execute("INSERT INTO answers (answers, answer, correct) VALUES (%s, %s, %s)",
                    (question, request.form['ansD'].strip(), correct == 'd'), True)
         return redirect('/manage/questions/new')
-    return render_template('manage/questions_new.html', categories=fetch_all_categories())
+    return render_template('manage/questions_new.html', categories=Category.fetch_all(db))
 
 
 @app.route('/manage/question/<question>/edit', methods=['GET', 'POST'])
@@ -106,7 +106,7 @@ def edit_question(question):
 
         return redirect('/manage/question/{}/edit'.format(question))
     return render_template('manage/questions_new.html', q=Question.get_by_id(question, db),
-                           categories=fetch_all_categories())
+                           categories=Category.fetch_all(db))
 
 
 @app.route('/quiz', methods=['GET', 'POST'])
@@ -164,14 +164,6 @@ def manage_arrange_edit(quiz):
 def manage_arrange_question(quiz):
     Quiz.get_by_id(quiz, db=db).add(Question.get_by_id(db=db, id=request.args.get('id')))
     return redirect('/manage/questions')
-
-
-def fetch_all_categories():
-    res = db.execute("SELECT * FROM categories")
-    categories = []
-    for r in res:
-        categories.append(Category(**r, db=db))
-    return categories
 
 
 if __name__ == '__main__':

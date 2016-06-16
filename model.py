@@ -31,6 +31,14 @@ class Category(object):
         res = db.execute("SELECT * FROM categories WHERE id = %s", (cat,))
         return Category(**res[0], db=db)
 
+    @staticmethod
+    def fetch_all(db):
+        res = db.execute("SELECT * FROM categories")
+        categories = []
+        for r in res:
+            categories.append(Category(**r, db=db))
+        return categories
+
 
 class Answer(object):
     def __init__(self, id, correct, answer, answers):
