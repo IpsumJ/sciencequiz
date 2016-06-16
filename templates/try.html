@@ -50,7 +50,6 @@
                     default:
                         break;
                 }
-                return true;
             });
             var socket = io.connect('http://' + document.domain + ':' + location.port + '/quiz');
             socket.on('question', function (msg) {
