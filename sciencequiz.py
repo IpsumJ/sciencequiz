@@ -118,7 +118,7 @@ def quiz_connect():
 @socketio.on('answer_selected', namespace='/quiz')
 def answer_selected(message):
     ans = message['sel']
-    #answer is correct, do something
+    # answer is correct, do something
     if ans == 'c':
         pass
 
@@ -128,6 +128,12 @@ def answer_selected(message):
 @app.route('/manage/arrange', methods=['GET', 'POST'])
 def manage_arrange():
     return render_template('manage/arrange.html')
+
+
+@app.route('/manage/arrange/new', methods=['GET', 'POST'])
+def manage_arrange_new():
+    return render_template('manage/arrange_new.html')
+
 
 def fetch_all_categories():
     res = db.execute("SELECT * FROM categories")
