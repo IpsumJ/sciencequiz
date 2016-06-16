@@ -18,6 +18,21 @@
                                 <button type="submit" name="delete" class="btn btn-danger pull-right"><span
                                         class="glyphicon glyphicon-trash" aria-hidden="true"></span></button>
                             </form>
+                            <div class="btn-group pull-right">
+                                <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown"
+                                        aria-haspopup="true"
+                                        aria-expanded="false"><span
+                                        class="glyphicon glyphicon-plus" aria-hidden="true"></span> <span
+                                        class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    {% for quiz in quizes %}
+                                        <li><a href="/manage/arrange/{{ quiz.id }}/add?id={{ q.id }}">{{ quiz.name }}</a></li>
+                                    {% endfor %}
+                                    <li role="separator" class="divider"></li>
+                                    <li><a href="/manage/arrange/new">Neues Quiz anlegen</a></li>
+                                </ul>
+                            </div>
                         </td>
                     </tr>
                 {% endfor %}

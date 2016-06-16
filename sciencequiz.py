@@ -44,7 +44,7 @@ def manage():
 
 @app.route('/manage/questions')
 def manage_questions():
-    return render_template('manage/questions.html', categories=fetch_all_categories())
+    return render_template('manage/questions.html', categories=fetch_all_categories(), quizes=Quiz.get_all(db))
 
 
 @app.route('/manage/categories', methods=['GET', 'POST'])
@@ -136,7 +136,8 @@ def manage_arrange():
     if request.method == 'POST':
         db.execute("DELETE FROM quizes WHERE id=%s", (request.form['id']), None)
         return redirect("/manage/arrange")
-    return render_template('manage/arrange.html', questions=[Quiz(**q) for q in db.execute("SELECT * FROM quizes")])
+    return render_template('manage/arrange.html',
+                           questions=[Quiz(**q, db=db) for q in db.execute("SELECT * FROM quizes")])
 
 
 @app.route('/manage/arrange/new', methods=['GET', 'POST'])
@@ -157,6 +158,12 @@ def manage_arrange_edit(quiz):
                    (request.form['name'], request.form['year'], request.form['public'], quiz), True)
         return redirect('/manage/arrange')
     return render_template('manage/arrange_new.html', q=Quiz.get_by_id(quiz, db))
+
+
+@app.route('/manage/arrange/<quiz>/add', methods=['GET'])
+def manage_arrange_question(quiz):
+    Quiz.get_by_id(quiz, db=db).add(Question.get_by_id(db=db, id=request.args.get('id')))
+    return redirect('/manage/questions')
 
 
 def fetch_all_categories():
