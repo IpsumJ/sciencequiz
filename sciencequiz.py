@@ -133,6 +133,9 @@ def answer_selected(message):
 
 @app.route('/manage/arrange', methods=['GET', 'POST'])
 def manage_arrange():
+    if request.method == 'POST':
+        db.execute("DELETE FROM quizes WHERE id=%s", (request.form['id']), None)
+        return redirect("/manage/arrange")
     return render_template('manage/arrange.html', questions=[Quiz(**q) for q in db.execute("SELECT * FROM quizes")])
 
 
