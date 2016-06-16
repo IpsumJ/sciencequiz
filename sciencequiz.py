@@ -153,7 +153,6 @@ def manage_arrange_new():
 @app.route('/manage/arrange/<quiz>', methods=['GET', 'POST'])
 def manage_arrange_edit(quiz):
     if request.method == 'POST':
-        print("UUPPDD")
         db.execute("UPDATE quizes SET name=%s, year=%s, public=%s WHERE id=%s",
                    (request.form['name'], request.form['year'], request.form['public'], quiz), True)
         return redirect('/manage/arrange')
