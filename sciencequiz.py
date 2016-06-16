@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect
+from flask.ext.socketio import SocketIO, emit
 from model import *
 from db import *
 from beaker.middleware import SessionMiddleware
@@ -13,6 +14,7 @@ session_opts = {
 }
 
 app = Flask(__name__)
+socketio = SocketIO(app)
 
 
 @app.context_processor
@@ -104,6 +106,13 @@ def edit_question(question):
 @app.route('/quiz', methods=['GET', 'POST'])
 def quiz():
     return render_template('try.html')
+
+
+@socketio.on('connect', namespace='/quiz')
+def test_connect():
+    emit('question', {'question': 'Connected', 'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd'})
+
+    print("Connected")
 
 
 def fetch_all_categories():
