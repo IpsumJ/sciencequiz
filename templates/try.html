@@ -29,6 +29,29 @@
     <script type="text/javascript" src="/static/js/socket.io-1.4.5.js"></script>
     <script type="text/javascript">
         $(document).ready(function () {
+            document.addEventListener('keydown', function (event) {
+                switch (event.keyCode) {
+                    case 65:
+                        event.preventDefault();
+                        $('#a').click();
+                        break;
+                    case 66:
+                        event.preventDefault();
+                        $('#b').click();
+                        break;
+                    case 67:
+                        event.preventDefault();
+                        $('#c').click();
+                        break;
+                    case 68:
+                        event.preventDefault();
+                        $('#d').click();
+                        break;
+                    default:
+                        break;
+                }
+                return true;
+            });
             var socket = io.connect('http://' + document.domain + ':' + location.port + '/quiz');
             socket.on('question', function (msg) {
                 $('#question').html(msg.question);
@@ -55,6 +78,8 @@
                         $(v).children().each(function (i, k) {
                             $(k).addClass("selected");
                         });
+                        window.console.info($(v).context.id);
+                        socket.emit('answer_selected', {sel: $(v).context.id});
                         selected = true;
                         window.setTimeout(function () {
                             var rand = Math.floor(Math.random() * 4);
