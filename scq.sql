@@ -128,7 +128,8 @@ ALTER SEQUENCE categories_id_seq OWNED BY categories.id;
 
 CREATE TABLE device_api_tokens (
     token character varying(200) NOT NULL,
-    id integer NOT NULL
+    id integer NOT NULL,
+    description character varying(300) NOT NULL
 );
 
 
@@ -273,7 +274,8 @@ ALTER SEQUENCE quiz_questsions_question_seq OWNED BY quiz_questsions.question;
 CREATE TABLE quizes (
     year integer NOT NULL,
     name character varying(200),
-    id integer NOT NULL
+    id integer NOT NULL,
+    public boolean DEFAULT false NOT NULL
 );
 
 
