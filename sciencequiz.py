@@ -109,7 +109,7 @@ def quiz():
 
 
 @socketio.on('connect', namespace='/quiz')
-def test_connect():
+def quiz_connect():
     emit('question', {'question': 'Connected', 'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd'})
 
     print("Connected")
