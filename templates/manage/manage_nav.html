@@ -17,8 +17,12 @@
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav">
                     <li {% if active == 'dash' %}class="active"{% endif %}><a href="/manage">Dashboard</a></li>
-                    <li {% if active == 'questions' %}class="active"{% endif %}><a href="/manage/questions">Fragen</a></li>
-                    <li {% if active == 'cat' %}class="active"{% endif %}><a href="/manage/categories">Kategorien</a></li>
+                    <li {% if active == 'questions' %}class="active"{% endif %}><a href="/manage/questions">Fragen</a>
+                    </li>
+                    <li {% if active == 'cat' %}class="active"{% endif %}><a href="/manage/categories">Kategorien</a>
+                    </li>
+                    <li {% if active == 'arrange' %}class="active"{% endif %}><a href="/manage/arrange">Quizes
+                        zusammenstellen</a></li>
                 </ul>
                 <form class="navbar-form navbar-left" role="search">
                     <div class="form-group">

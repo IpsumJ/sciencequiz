@@ -125,6 +125,10 @@ def answer_selected(message):
     emit('answer_response', {'correct': 'c'})
 
 
+@app.route('/manage/arrange', methods=['GET', 'POST'])
+def manage_arrange():
+    return render_template('manage/arrange.html')
+
 def fetch_all_categories():
     res = db.execute("SELECT * FROM categories")
     categories = []
