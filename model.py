@@ -36,18 +36,27 @@ class Answer(object):
 
 
 class Quiz(object):
-    def __init__(self, id, name, year, public):
+    def __init__(self, id, name, year, public, db):
         self.public = public
         self.id = id
         self.name = name
         self.year = year
+        self.db = db
+
+    def get_ast_index(self):
+        res = self.db.execute("SELECT index FROM quiz_questions WHERE quiz=%s ORDER BY index LIMIT 1", (self.id,))
+        return res[0]['index'] if len(res) > 0 else 0
+
+    def add(self, question):
+        self.db.execute("INSERT INTO quiz_questions (index, question, quiz) VALUES (%s, %s, %s)",
+                        (self.get_ast_index() + 1, question.id, self.id), True)
 
     @staticmethod
     def get_by_id(quiz, db):
         res = db.execute("SELECT * FROM quizes WHERE id = %s", (quiz,))
-        return Quiz(**res[0])
+        return Quiz(**res[0], db=db)
 
     @staticmethod
     def get_all(db):
         res = db.execute("SELECT * FROM quizes")
-        return [Quiz(**r) for r in res]
+        return [Quiz(**r, db=db) for r in res]
