@@ -76,11 +76,11 @@ class Quiz(object):
 
 
 class DeviceToken(object):
-    def __init__(self, id, name, token, db):
+    def __init__(self, id, description, token, db):
         self.id = id
-        self.name = name
+        self.name = description
         self.token = token
 
     @staticmethod
     def get_all(db):
-        return [DeviceToken(**d, db=db) for d in db.execute("SELECT * FROM device_tokens")]
+        return [DeviceToken(**d, db=db) for d in db.execute("SELECT * FROM device_api_tokens")]
