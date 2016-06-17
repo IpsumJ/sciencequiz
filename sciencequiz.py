@@ -4,6 +4,7 @@ from model import *
 from db import *
 from beaker.middleware import SessionMiddleware
 import datetime
+import uuid
 
 # TODO!!!: Error handling
 DEBUG = True
@@ -166,9 +167,13 @@ def manage_arrange_question(quiz):
     return redirect('/manage/questions')
 
 
-@app.route('/manage/clients', methods=['GET'])
+@app.route('/manage/clients', methods=['GET', 'POST'])
 def manage_arrange_device_tokens():
-    return render_template('/manage/device_tokens.html')
+    if request.method == 'POST':
+        db.execute("INSERT INTO device_api_tokens (description, token) VALUES(%s, %s)",
+                   (request.form['newtoken'], str(uuid.uuid5(uuid.NAMESPACE_DNS, 'sciencequiz.de'))), True)
+        return redirect('/manage/clients')
+    return render_template('/manage/device_tokens.html', devices=DeviceToken.get_all(db))
 
 
 if __name__ == '__main__':
