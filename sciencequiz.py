@@ -183,6 +183,13 @@ def manage_edit_device_token(device):
     return redirect('/manage/clients')
 
 
+@app.route('/display', methods=['GET', 'POST'])
+def display():
+    if request.method == 'POST':
+        pass
+    return render_template('display_login.html')
+
+
 if __name__ == '__main__':
     global DEBUG, db
     db = PGSQLConnection(database="scq", user="scq", password="scq", host="localhost", port=5433)
