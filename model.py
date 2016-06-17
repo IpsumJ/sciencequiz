@@ -8,8 +8,7 @@ class Question(object):
 
     @staticmethod
     def get_by_id(id, db):
-        res = db.execute("SELECT * FROM questions WHERE id = %s", (id,))
-        return Question(**res[0], db=db)
+        return Question(**db.execute("SELECT * FROM questions WHERE id = %s", (id,))[0], db=db)
 
     def get_quizes(self):
         return [Quiz.get_by_id(res['quiz'], db=self.db) for res in
@@ -28,8 +27,7 @@ class Category(object):
 
     @staticmethod
     def get_by_id(cat, db):
-        res = db.execute("SELECT * FROM categories WHERE id = %s", (cat,))
-        return Category(**res[0], db=db)
+        return Category(**db.execute("SELECT * FROM categories WHERE id = %s", (cat,))[0], db=db)
 
     @staticmethod
     def fetch_all(db):
@@ -66,13 +64,11 @@ class Quiz(object):
 
     @staticmethod
     def get_by_id(quiz, db):
-        res = db.execute("SELECT * FROM quizes WHERE id = %s", (quiz,))
-        return Quiz(**res[0], db=db)
+        return Quiz(**db.execute("SELECT * FROM quizes WHERE id = %s", (quiz,))[0], db=db)
 
     @staticmethod
     def get_all(db):
-        res = db.execute("SELECT * FROM quizes")
-        return [Quiz(**r, db=db) for r in res]
+        return [Quiz(**r, db=db) for r in db.execute("SELECT * FROM quizes")]
 
 
 class DeviceToken(object):
