@@ -73,3 +73,14 @@ class Quiz(object):
     def get_all(db):
         res = db.execute("SELECT * FROM quizes")
         return [Quiz(**r, db=db) for r in res]
+
+
+class DeviceToken(object):
+    def __init__(self, id, name, token, db):
+        self.id = id
+        self.name = name
+        self.token = token
+
+    @staticmethod
+    def get_all(db):
+        return [DeviceToken(**d, db=db) for d in db.execute("SELECT * FROM device_tokens")]
