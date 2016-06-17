@@ -166,6 +166,11 @@ def manage_arrange_question(quiz):
     return redirect('/manage/questions')
 
 
+@app.route('/manage/clients', methods=['GET'])
+def manage_arrange_device_tokens():
+    return render_template('/manage/device_tokens.html')
+
+
 if __name__ == '__main__':
     global DEBUG, db
     db = PGSQLConnection(database="scq", user="scq", password="scq", host="localhost", port=5433)
