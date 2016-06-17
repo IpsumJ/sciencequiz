@@ -26,8 +26,17 @@
         {% for dev in devices %}
             <tr>
                 <td>{{ dev.name }}</td>
-                <td><pre>{{ dev.token }}</pre></td>
-                <td></td>
+                <td>
+                    <pre>{{ dev.token }}</pre>
+                </td>
+                <td>
+                    <form method="post" action="/manage/client/{{ dev.id }}">
+                        <button type="submit" name="delete" class="btn btn-danger pull-right"><span
+                                class="glyphicon glyphicon-trash" aria-hidden="true"></span></button>
+                    </form>
+                    <a class="btn btn-success pull-right" href="#"><span
+                            class="glyphicon glyphicon-play" aria-hidden="true"></span></a>
+                </td>
             </tr>
         {% endfor %}
     </table>

@@ -176,6 +176,13 @@ def manage_arrange_device_tokens():
     return render_template('/manage/device_tokens.html', devices=DeviceToken.get_all(db))
 
 
+@app.route('/manage/client/<device>', methods=['POST'])
+def manage_edit_device_token(device):
+    if 'delete' in request.form:
+        db.execute("DELETE FROM device_api_tokens WHERE id=%s", (device,), None)
+    return redirect('/manage/clients')
+
+
 if __name__ == '__main__':
     global DEBUG, db
     db = PGSQLConnection(database="scq", user="scq", password="scq", host="localhost", port=5433)
