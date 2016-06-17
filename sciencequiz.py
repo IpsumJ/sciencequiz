@@ -186,7 +186,12 @@ def manage_edit_device_token(device):
 @app.route('/display', methods=['GET', 'POST'])
 def display():
     if request.method == 'POST':
-        pass
+        res = db.execute("SELECT * FROM device_api_tokens WHERE token=%s", (request.form['token'],))
+        if len(res) > 0:
+            s = request.environ['beaker.session']
+            s['device_token'] = DeviceToken(**res[0], db=db)
+            s.save()
+            return redirect('/quiz')
     return render_template('display_login.html')
 
 

@@ -34,8 +34,11 @@
                         <button type="submit" name="delete" class="btn btn-danger pull-right"><span
                                 class="glyphicon glyphicon-trash" aria-hidden="true"></span></button>
                     </form>
-                    <a class="btn btn-success pull-right" href="#"><span
-                            class="glyphicon glyphicon-play" aria-hidden="true"></span></a>
+                    <form method="post" action="/display">
+                        <input type="hidden" name="token" value="{{ dev.token }}"/>
+                        <button class="btn btn-success pull-right" type="submit"><span
+                                class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
+                    </form>
                 </td>
             </tr>
         {% endfor %}
