@@ -114,7 +114,15 @@ def edit_question(question):
 
 @app.route('/quiz', methods=['GET', 'POST'])
 def quiz():
-    return render_template('try.html')
+    if 'device_token' in request.environ['beaker.session']:
+        return render_template('try.html')
+    return redirect('/display')
+
+
+@app.route('/clear_session')
+def clear_session():
+    request.environ['beaker.session'].delete()
+    return redirect('/')
 
 
 @socketio.on('disconnect', namespace='/quiz')
