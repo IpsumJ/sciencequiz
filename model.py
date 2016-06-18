@@ -80,3 +80,9 @@ class DeviceToken(object):
     @staticmethod
     def get_all(db):
         return [DeviceToken(**d, db=db) for d in db.execute("SELECT * FROM device_api_tokens")]
+
+class Display(object):
+    def __init__(self, token):
+        self.token = token
+        self.ready = True
+

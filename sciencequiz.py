@@ -147,7 +147,7 @@ def quiz_connect():
         print("Device token detected!")
         join_room(s['device_token'].token)
         dev = s['device_token']
-        active_displays[dev.token] = dev
+        active_displays[dev.token] = Display(dev)
         print(s['device_token'].name, 'was added as active screen.')
     print("Connected")
 
