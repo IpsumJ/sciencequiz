@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect
-from flask.ext.socketio import SocketIO, emit
+from flask.ext.socketio import SocketIO, emit, join_room, leave_room
 from model import *
 from db import *
 from beaker.middleware import SessionMiddleware
@@ -8,6 +8,8 @@ import uuid
 
 # TODO!!!: Error handling
 DEBUG = True
+
+active_displays = {}
 
 session_opts = {
     'session.type': 'file',
@@ -115,10 +117,30 @@ def quiz():
     return render_template('try.html')
 
 
+@socketio.on('disconnect', namespace='/quiz')
+def quiz_disconnect():
+    s = request.environ['beaker.session']['device_token']
+    leave_room(s.token)
+    active_displays[s.token] = None
+    print('disconnect', s.name)
+    pass
+
+
+@app.route('/manage/displays')
+def manage_displays():
+    return render_template('/manage/displays.html', displays=active_displays)
+
+
 @socketio.on('connect', namespace='/quiz')
 def quiz_connect():
     emit('question', {'question': 'Connected', 'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd'})
-
+    s = request.environ['beaker.session']
+    if 'device_token' in s:
+        print("Device token detected!")
+        join_room(s['device_token'].token)
+        dev = s['device_token']
+        active_displays[dev.token] = dev
+        print(s['device_token'].name, 'was added as active screen.')
     print("Connected")
 
 

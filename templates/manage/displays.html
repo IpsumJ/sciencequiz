@@ -1,0 +1,20 @@
+{% extends "manage/manage_nav.html" %}
+{% set active = 'displays' %}
+{% block title %}
+    Aktive Displays
+{% endblock %}
+{% block body %}
+    <table class="left-form-table table">
+        <tr>
+            <th>Name</th>
+            <th></th>
+        </tr>
+        {% for d in displays.values() %}
+            <tr>
+                <td>{{ d.name }}</td>
+                <td>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
