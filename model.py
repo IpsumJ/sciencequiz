@@ -81,8 +81,10 @@ class DeviceToken(object):
     def get_all(db):
         return [DeviceToken(**d, db=db) for d in db.execute("SELECT * FROM device_api_tokens")]
 
+
 class Display(object):
     def __init__(self, token):
         self.token = token
         self.ready = True
-
+        self.r = True
+        self.w = True
