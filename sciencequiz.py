@@ -129,7 +129,7 @@ def clear_session():
 def quiz_disconnect():
     s = request.environ['beaker.session']['device_token']
     leave_room(s.token)
-    del(active_displays[s.token])
+    del (active_displays[s.token])
     print('disconnect', s.name)
     pass
 
@@ -141,7 +141,7 @@ def manage_displays():
 
 @socketio.on('connect', namespace='/quiz')
 def quiz_connect():
-    #emit('question', {'question': 'Connected', 'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd'})
+    # emit('question', {'question': 'Connected', 'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd'})
     s = request.environ['beaker.session']
     if 'device_token' in s:
         print("Device token detected!")
@@ -171,7 +171,8 @@ def manage_arrange():
         db.execute("DELETE FROM quizes WHERE id=%s", (request.form['id']), None)
         return redirect("/manage/arrange")
     return render_template('manage/arrange.html',
-                           questions=[Quiz(**q, db=db) for q in db.execute("SELECT * FROM quizes")])
+                           questions=[Quiz(**q, db=db) for q in db.execute("SELECT * FROM quizes")],
+                           displays=[d for d in active_displays.values() if d.ready])
 
 
 @app.route('/manage/arrange/new', methods=['GET', 'POST'])

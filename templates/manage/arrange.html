@@ -12,6 +12,7 @@
             <th>Name</th>
             <th>Jahr</th>
             <th>Öffentlich?</th>
+            <th>Abspielen</th>
             <th></th>
         </tr>
         {% for q in questions %}
@@ -20,11 +21,31 @@
                 <td>{{ q.year }}</td>
                 <td><input type="checkbox" {% if q.public %} checked{% endif %} disabled/></td>
                 <td>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown"
+                                aria-haspopup="true"
+                                aria-expanded="false"><span
+                                class="glyphicon glyphicon-play" aria-hidden="true"></span> <span
+                                class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            {% for d in displays %}
+                                <li>
+                                    <a href="/manage/run/{{ d.token.token }}">{{ d.token.name }}</a>
+                                </li>
+                            {% endfor %}
+                            <li role="separator" class="divider"></li>
+                            <li><a href="/manage/clients">Clients verwalten</a></li>
+                        </ul>
+                    </div>
+                </td>
+                <td>
                     <span class="pull-right">
                         <form method="post">
                             <input type="hidden" value="{{ q.id }}" name="id"/>
-                             <a class="btn btn-primary" href="/manage/arrange/{{ q.id }}"><span class="glyphicon glyphicon-edit"
-                                                                            aria-hidden="true"></span>
+                            <a class="btn btn-primary" href="/manage/arrange/{{ q.id }}"><span
+                                    class="glyphicon glyphicon-edit"
+                                    aria-hidden="true"></span>
 
                             </a>
                             <button class="btn btn-danger" name="delete"><span class="glyphicon glyphicon-trash"
