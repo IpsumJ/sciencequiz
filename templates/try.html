@@ -74,6 +74,9 @@
                     $('#full').removeClass('hidden');
                 }
             });
+            socket.on('selection', function (msg) {
+                 $('#'+msg.selected).click();
+            });
             socket.on('answer_response', function (msg) {
                 var corr = msg.correct;
                 if ($(".selected").parent().attr("id") != corr) {
@@ -105,8 +108,9 @@
                         $(v).children().each(function (i, k) {
                             $(k).addClass("selected");
                         });
+                        socket.emit('answer_selected', {sel: $(v).context.id});
                         window.setTimeout(function () {
-                            socket.emit('answer_selected', {sel: $(v).context.id});
+                            socket.emit('answer_selected_result', {sel: $(v).context.id});
                         }, 1500);
 
                         selected = true;

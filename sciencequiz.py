@@ -147,14 +147,17 @@ def quiz_connect():
         print("Device token detected!")
         join_room(s['device_token'].token)
         dev = s['device_token']
-        active_displays[dev.token] = Display(dev)
+        if dev.token in active_displays and not active_displays[dev.token].ready:
+            emit('question', {'question': 'Connected', 'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd'}, room=dev.token)
+        else:
+            active_displays[dev.token] = Display(dev)
         print(s['device_token'].name, 'was added as active screen.')
     print("Connected")
 
 
-@socketio.on('answer_selected', namespace='/quiz')
+@socketio.on('answer_selected_result', namespace='/quiz')
 def answer_selected(message):
-    disp = active_displays[request.environ['beaker_session']['device_token']]
+    disp = active_displays[request.environ['beaker.session']['device_token'].token]
     if not disp.w:
         return
     ans = message['sel']
@@ -162,7 +165,16 @@ def answer_selected(message):
     if ans == 'c':
         pass
 
-    emit('answer_response', {'correct': 'c'})
+    emit('answer_response', {'correct': 'c'}, room=disp.token.token)
+
+
+@socketio.on('answer_selected', namespace='/quiz')
+def answer_selected(message):
+    disp = active_displays[request.environ['beaker.session']['device_token'].token]
+    if not disp.w:
+        return
+    ans = message['sel']
+    emit('selection', {'selected': ans}, room=disp.token.token)
 
 
 @app.route('/manage/arrange', methods=['GET', 'POST'])
@@ -227,6 +239,17 @@ def display():
             s.save()
             return redirect('/quiz')
     return render_template('display_login.html')
+
+
+@app.route('/manage/run/<token>')
+def run_display(token):
+    res = db.execute("SELECT * FROM device_api_tokens WHERE token=%s", (token,))
+    if len(res) > 0:
+        s = request.environ['beaker.session']
+        s['device_token'] = DeviceToken(**res[0], db=db)
+        s.save()
+        active_displays[token].ready = False
+        return redirect('/quiz')
 
 
 if __name__ == '__main__':
