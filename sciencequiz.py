@@ -129,7 +129,7 @@ def clear_session():
 def quiz_disconnect():
     s = request.environ['beaker.session']['device_token']
     leave_room(s.token)
-    active_displays[s.token] = None
+    del(active_displays[s.token])
     print('disconnect', s.name)
     pass
 
@@ -154,6 +154,9 @@ def quiz_connect():
 
 @socketio.on('answer_selected', namespace='/quiz')
 def answer_selected(message):
+    disp = active_displays[request.environ['beaker_session']['device_token']]
+    if not disp.w:
+        return
     ans = message['sel']
     # answer is correct, do something
     if ans == 'c':
@@ -227,7 +230,7 @@ def display():
 
 if __name__ == '__main__':
     global DEBUG, db
-    db = PGSQLConnection(database="scq", user="scq", password="scq", host="localhost", port=5433)
+    db = PGSQLConnection(database="scq", user="scq", password="scq", host="localhost", port=5432)
     app.wsgi_app = SessionMiddleware(app.wsgi_app, session_opts)
     app.debug = DEBUG
     app.run(threaded=True)
