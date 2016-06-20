@@ -28,8 +28,12 @@
     <script type="text/javascript" src="/static/js/jquery.min.js"></script>
     <script type="text/javascript" src="/static/js/socket.io-1.4.5.js"></script>
     <script type="text/javascript">
+        var running = false;
         $(document).ready(function () {
             document.addEventListener('keydown', function (event) {
+                if (!running) {
+                    return
+                }
                 switch (event.keyCode) {
                     case 65:
                         event.preventDefault();
@@ -52,12 +56,23 @@
                 }
             });
             var socket = io.connect('http://' + document.domain + ':' + location.port + '/quiz');
+
             socket.on('question', function (msg) {
+                if(!running) {
+                    running = true;
+                    $('#full').addClass('hidden');
+                }
                 $('#question').html(msg.question);
                 $('#a .text').html(msg.a);
                 $('#b .text').html(msg.b);
                 $('#c .text').html(msg.c);
                 $('#d .text').html(msg.d);
+            });
+            socket.on('sleep', function (msg) {
+                if (!running) {
+                    running = false;
+                    $('#full').removeClass('hidden');
+                }
             });
             socket.on('answer_response', function (msg) {
                 var corr = msg.correct;
@@ -100,4 +115,10 @@
             });
         });
     </script>
+    <div id="full">
+        <div class="centered">
+            <img id="logo" src="/static/logo.svg"/>
+            <h1>ScienceQuiz</h1>
+        </div>
+    </div>
 {% endblock %}

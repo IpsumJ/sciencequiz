@@ -141,7 +141,7 @@ def manage_displays():
 
 @socketio.on('connect', namespace='/quiz')
 def quiz_connect():
-    emit('question', {'question': 'Connected', 'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd'})
+    #emit('question', {'question': 'Connected', 'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd'})
     s = request.environ['beaker.session']
     if 'device_token' in s:
         print("Device token detected!")

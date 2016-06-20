@@ -196,3 +196,36 @@ body {
 .label a {
     color: #fff;
 }
+
+#full {
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: #fff;
+    z-index: 10000;
+
+}
+.centered h1 {
+    margin: 0;
+}
+.centered #logo {
+    margin-left: 60px;
+}
+.centered{
+    height: 200px;
+    left: 50%;
+    margin-left: -233px;
+    margin-top: -190px;
+    padding: 25px;
+    position: absolute;
+    top: 50%;
+    width:400px;
+    text-align:center;
+    font-size: 30pt;
+}
+
+.hidden {
+    display: none;
+}
