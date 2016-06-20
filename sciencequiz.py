@@ -21,6 +21,7 @@ app = Flask(__name__)
 socketio = SocketIO(app)
 
 
+# CONTEXT PROCESSORS
 @app.context_processor
 def inject_user():
     s = request.environ['beaker.session']
@@ -39,6 +40,8 @@ def inject_year():
 def science_quiz():
     return render_template('main.html', title="ScienceQuiz")
 
+
+# MANAGE PAGES
 
 @app.route('/manage')
 def manage():
@@ -112,90 +115,20 @@ def edit_question(question):
                            categories=Category.fetch_all(db))
 
 
-@app.route('/quiz', methods=['GET', 'POST'])
-def quiz():
-    if 'device_token' in request.environ['beaker.session']:
-        return render_template('try.html')
-    return redirect('/display')
-
-
-@app.route('/clear_session')
-def clear_session():
-    request.environ['beaker.session'].delete()
-    return redirect('/')
-
-
-@socketio.on('disconnect', namespace='/quiz')
-def quiz_disconnect():
-    s = request.environ['beaker.session']['device_token']
-    leave_room(s.token)
-    del (active_displays[s.token])
-    print('disconnect', s.name)
-    pass
+@app.route('/manage/run/<token>')
+def run_display(token):
+    res = db.execute("SELECT * FROM device_api_tokens WHERE token=%s", (token,))
+    if len(res) > 0:
+        s = request.environ['beaker.session']
+        s['device_token'] = DeviceToken(**res[0], db=db)
+        s.save()
+        active_displays[token].ready = False
+        return redirect('/quiz')
 
 
 @app.route('/manage/displays')
 def manage_displays():
     return render_template('/manage/displays.html', displays=active_displays)
-
-
-@socketio.on('connect', namespace='/quiz')
-def quiz_connect():
-    # emit('question', {'question': 'Connected', 'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd'})
-    s = request.environ['beaker.session']
-    if 'device_token' in s:
-        print("Device token detected!")
-        join_room(s['device_token'].token)
-        dev = s['device_token']
-        if dev.token in active_displays and not active_displays[dev.token].ready:
-            emit('question', {'question': 'Connected', 'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd'}, room=dev.token)
-        else:
-            active_displays[dev.token] = Display(dev)
-        print(s['device_token'].name, 'was added as active screen.')
-    print("Connected")
-
-
-@socketio.on('answer_selected_result', namespace='/quiz')
-def answer_selected(message):
-    disp = active_displays[request.environ['beaker.session']['device_token'].token]
-    if not disp.w:
-        return
-    ans = message['sel']
-    # answer is correct, do something
-    if ans == 'c':
-        pass
-
-    emit('answer_response', {'correct': 'c'}, room=disp.token.token)
-
-
-@socketio.on('answer_selected', namespace='/quiz')
-def answer_selected(message):
-    disp = active_displays[request.environ['beaker.session']['device_token'].token]
-    if not disp.w:
-        return
-    ans = message['sel']
-    emit('selection', {'selected': ans}, room=disp.token.token)
-
-
-@app.route('/manage/arrange', methods=['GET', 'POST'])
-def manage_arrange():
-    if request.method == 'POST':
-        db.execute("DELETE FROM quizes WHERE id=%s", (request.form['id']), None)
-        return redirect("/manage/arrange")
-    return render_template('manage/arrange.html',
-                           questions=[Quiz(**q, db=db) for q in db.execute("SELECT * FROM quizes")],
-                           displays=[d for d in active_displays.values() if d.ready])
-
-
-@app.route('/manage/arrange/new', methods=['GET', 'POST'])
-def manage_arrange_new():
-    if request.method == 'POST':
-        year = int(request.args.get('year', datetime.datetime.now().year))
-        name = request.form['name']
-        db.execute("INSERT INTO quizes (name, year, public) VALUES(%s, %s, %s)", (name, year, 'public' in request.form),
-                   True)
-        return redirect("/manage/arrange")
-    return render_template('manage/arrange_new.html')
 
 
 @app.route('/manage/arrange/<quiz>', methods=['GET', 'POST'])
@@ -229,6 +162,41 @@ def manage_edit_device_token(device):
     return redirect('/manage/clients')
 
 
+@app.route('/manage/arrange', methods=['GET', 'POST'])
+def manage_arrange():
+    if request.method == 'POST':
+        db.execute("DELETE FROM quizes WHERE id=%s", (request.form['id']), None)
+        return redirect("/manage/arrange")
+    return render_template('manage/arrange.html',
+                           questions=[Quiz(**q, db=db) for q in db.execute("SELECT * FROM quizes")],
+                           displays=[d for d in active_displays.values() if d.ready])
+
+
+@app.route('/manage/arrange/new', methods=['GET', 'POST'])
+def manage_arrange_new():
+    if request.method == 'POST':
+        year = int(request.args.get('year', datetime.datetime.now().year))
+        name = request.form['name']
+        db.execute("INSERT INTO quizes (name, year, public) VALUES(%s, %s, %s)", (name, year, 'public' in request.form),
+                   True)
+        return redirect("/manage/arrange")
+    return render_template('manage/arrange_new.html')
+
+
+# USER PAGES
+@app.route('/quiz', methods=['GET', 'POST'])
+def quiz():
+    if 'device_token' in request.environ['beaker.session']:
+        return render_template('try.html')
+    return redirect('/display')
+
+
+@app.route('/clear_session')
+def clear_session():
+    request.environ['beaker.session'].delete()
+    return redirect('/')
+
+
 @app.route('/display', methods=['GET', 'POST'])
 def display():
     if request.method == 'POST':
@@ -241,15 +209,52 @@ def display():
     return render_template('display_login.html')
 
 
-@app.route('/manage/run/<token>')
-def run_display(token):
-    res = db.execute("SELECT * FROM device_api_tokens WHERE token=%s", (token,))
-    if len(res) > 0:
-        s = request.environ['beaker.session']
-        s['device_token'] = DeviceToken(**res[0], db=db)
-        s.save()
-        active_displays[token].ready = False
-        return redirect('/quiz')
+# SOCKET.IO STUFF
+@socketio.on('connect', namespace='/quiz')
+def quiz_connect():
+    # emit('question', {'question': 'Connected', 'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd'})
+    s = request.environ['beaker.session']
+    if 'device_token' in s:
+        print("Device token detected!")
+        join_room(s['device_token'].token)
+        dev = s['device_token']
+        if dev.token in active_displays and not active_displays[dev.token].ready:
+            emit('question', {'question': 'Connected', 'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd'}, room=dev.token)
+        else:
+            active_displays[dev.token] = Display(dev)
+        print(s['device_token'].name, 'was added as active screen.')
+    print("Connected")
+
+
+@socketio.on('disconnect', namespace='/quiz')
+def quiz_disconnect():
+    s = request.environ['beaker.session']['device_token']
+    leave_room(s.token)
+    del (active_displays[s.token])
+    print('disconnect', s.name)
+    pass
+
+
+@socketio.on('answer_selected_result', namespace='/quiz')
+def answer_selected(message):
+    disp = active_displays[request.environ['beaker.session']['device_token'].token]
+    if not disp.w:
+        return
+    ans = message['sel']
+    # answer is correct, do something
+    if ans == 'c':
+        pass
+
+    emit('answer_response', {'correct': 'c'}, room=disp.token.token)
+
+
+@socketio.on('answer_selected', namespace='/quiz')
+def answer_selected(message):
+    disp = active_displays[request.environ['beaker.session']['device_token'].token]
+    if not disp.w:
+        return
+    ans = message['sel']
+    emit('selection', {'selected': ans}, room=disp.token.token)
 
 
 if __name__ == '__main__':
@@ -257,4 +262,4 @@ if __name__ == '__main__':
     db = PGSQLConnection(database="scq", user="scq", password="scq", host="localhost", port=5432)
     app.wsgi_app = SessionMiddleware(app.wsgi_app, session_opts)
     app.debug = DEBUG
-    app.run(threaded=True)
+    app.run(threaded=True, host="0.0.0.0")
