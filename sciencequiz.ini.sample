@@ -1,0 +1,10 @@
+[db]
+db=scq
+user=scq
+password=scq
+host=127.0.0.1
+port=5432
+[sciencequiz]
+host=127.0.0.1
+port=5000
+

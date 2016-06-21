@@ -5,6 +5,7 @@ from db import *
 from beaker.middleware import SessionMiddleware
 import datetime
 import uuid
+import configparser
 
 # TODO!!!: Error handling
 DEBUG = True
@@ -259,7 +260,11 @@ def answer_selected(message):
 
 if __name__ == '__main__':
     global DEBUG, db
-    db = PGSQLConnection(database="scq", user="scq", password="scq", host="localhost", port=5432)
+    config = configparser.ConfigParser()
+    config.read("sciencequiz.ini")
+    db = PGSQLConnection(database=config.get('db', 'db'), user=config.get('db', 'user'),
+                         password=config.get('db', 'password'), host=config.get('db', 'host'),
+                         port=int(config.get('db', 'port')))
     app.wsgi_app = SessionMiddleware(app.wsgi_app, session_opts)
     app.debug = DEBUG
-    app.run(threaded=True, host="0.0.0.0")
+    app.run(threaded=True, host=config.get('sciencequiz', 'host'), port=int(config.get('sciencequiz', 'port')))
