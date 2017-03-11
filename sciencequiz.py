@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect
-from flask.ext.socketio import SocketIO, emit, join_room, leave_room
+from flask_socketio import SocketIO, emit, join_room, leave_room
 from model import *
 from db import *
 from beaker.middleware import SessionMiddleware
