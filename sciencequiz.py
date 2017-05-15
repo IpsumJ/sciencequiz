@@ -151,7 +151,7 @@ def manage_arrange_question(quiz):
 def manage_arrange_device_tokens():
     if request.method == 'POST':
         db.execute("INSERT INTO device_api_tokens (description, token) VALUES(%s, %s)",
-                   (request.form['newtoken'], str(uuid.uuid5(uuid.NAMESPACE_DNS, 'sciencequiz.de'))), True)
+                   (request.form['newtoken'], str(uuid.uuid4())), True)
         return redirect('/manage/clients')
     return render_template('/manage/device_tokens.html', devices=DeviceToken.get_all(db))
 
