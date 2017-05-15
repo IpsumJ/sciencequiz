@@ -219,6 +219,7 @@ def quiz_connect():
         print("Device token detected!")
         join_room(s['device_token'].token)
         dev = s['device_token']
+        emit('meta_data', {'display_name': dev.name}, room=dev.token)
         if dev.token in active_displays and not active_displays[dev.token].ready:
             emit('question', {'question': 'Connected', 'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd'}, room=dev.token)
         else:

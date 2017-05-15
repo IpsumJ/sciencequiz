@@ -57,6 +57,9 @@
             });
             var socket = io.connect('http://' + document.domain + ':' + location.port + '/quiz');
 
+            socket.on('meta_data', function(msg) {
+                $('#name').html(msg.display_name);
+            });
             socket.on('question', function (msg) {
                 if(!running) {
                     running = true;
@@ -123,6 +126,7 @@
         <div class="centered">
             <img id="logo" src="/static/logo.svg"/>
             <h1>ScienceQuiz</h1>
+            <h2 id="name"></h2>
         </div>
     </div>
 {% endblock %}
