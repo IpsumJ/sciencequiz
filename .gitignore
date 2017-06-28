@@ -1,4 +1,4 @@
 .idea
 __pycache__
 cache
-sciencequiz.ini
+config.py

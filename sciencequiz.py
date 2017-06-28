@@ -1,14 +1,12 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, g
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from model import *
 from db import *
 from beaker.middleware import SessionMiddleware
 import datetime
 import uuid
-import configparser
 
 # TODO!!!: Error handling
-DEBUG = True
 
 active_displays = {}
 
@@ -20,6 +18,16 @@ session_opts = {
 
 app = Flask(__name__)
 socketio = SocketIO(app)
+app.config.from_pyfile('config.py')
+app.wsgi_app = SessionMiddleware(app.wsgi_app, session_opts)
+
+
+def get_db_conn():
+    if not hasattr(g, 'scq_pg_db_conn'):
+        g.scq_pg_db_conn = PGSQLConnection(database=app.config.get('DB'), user=app.config.get('DB_USER'),
+                                           password=app.config.get('DB_PASSWORD'), host=app.config.get('DB_HOST'),
+                                           port=app.config.get('DB_PORT'))
+    return g.scq_pg_db_conn
 
 
 # CONTEXT PROCESSORS
@@ -51,15 +59,18 @@ def manage():
 
 @app.route('/manage/questions')
 def manage_questions():
-    return render_template('manage/questions.html', categories=Category.fetch_all(db), quizes=Quiz.get_all(db))
+    return render_template('manage/questions.html', categories=Category.fetch_all(get_db_conn()),
+                           quizes=Quiz.get_all(get_db_conn()), db=get_db_conn())
+
+
 
 
 @app.route('/manage/categories', methods=['GET', 'POST'])
 def manage_categories():
     if request.method == 'POST':
         print(type(request.form['newcategory']))
-        db.execute("INSERT INTO categories (name) VALUES (%s)", (request.form['newcategory'],), True)
-    return render_template('manage/categories.html', categories=Category.fetch_all(db))
+        get_db_conn().execute("INSERT INTO categories (name) VALUES (%s)", (request.form['newcategory'],), True)
+    return render_template('manage/categories.html', categories=Category.fetch_all(get_db_conn()))
 
 
 # TODO: CSRF or so...
@@ -67,7 +78,7 @@ def manage_categories():
 def delete_category(category):
     if 'delete' in request.form:
         category = int(category)
-        db.execute("DELETE FROM categories WHERE id=(%s)", (category,), None)
+        get_db_conn().execute("DELETE FROM categories WHERE id=(%s)", (category,), None)
     return redirect('/manage/categories')
 
 
@@ -76,19 +87,19 @@ def delete_category(category):
 def manage_questions_new():
     if request.method == 'POST' and request.form['ansA'].strip() and request.form['ansB'].strip() and \
             request.form['ansC'].strip() and request.form['ansD'].strip():
-        question = db.execute("INSERT INTO questions (question, category) VALUES (%s, %s)",
-                              (request.form['question'], request.form['category']), True)
+        question = get_db_conn().execute("INSERT INTO questions (question, category) VALUES (%s, %s)",
+                                         (request.form['question'], request.form['category']), True)
         correct = request.form['correct']
-        db.execute("INSERT INTO answers (answers, answer, correct) VALUES (%s, %s, %s)",
-                   (question, request.form['ansA'].strip(), correct == 'a'), True)
-        db.execute("INSERT INTO answers (answers, answer, correct) VALUES (%s, %s, %s)",
-                   (question, request.form['ansB'].strip(), correct == 'b'), True)
-        db.execute("INSERT INTO answers (answers, answer, correct) VALUES (%s, %s, %s)",
-                   (question, request.form['ansC'].strip(), correct == 'c'), True)
-        db.execute("INSERT INTO answers (answers, answer, correct) VALUES (%s, %s, %s)",
-                   (question, request.form['ansD'].strip(), correct == 'd'), True)
+        get_db_conn().execute("INSERT INTO answers (answers, answer, correct) VALUES (%s, %s, %s)",
+                              (question, request.form['ansA'].strip(), correct == 'a'), True)
+        get_db_conn().execute("INSERT INTO answers (answers, answer, correct) VALUES (%s, %s, %s)",
+                              (question, request.form['ansB'].strip(), correct == 'b'), True)
+        get_db_conn().execute("INSERT INTO answers (answers, answer, correct) VALUES (%s, %s, %s)",
+                              (question, request.form['ansC'].strip(), correct == 'c'), True)
+        get_db_conn().execute("INSERT INTO answers (answers, answer, correct) VALUES (%s, %s, %s)",
+                              (question, request.form['ansD'].strip(), correct == 'd'), True)
         return redirect('/manage/questions/new')
-    return render_template('manage/questions_new.html', categories=Category.fetch_all(db))
+    return render_template('manage/questions_new.html', categories=Category.fetch_all(get_db_conn()))
 
 
 @app.route('/manage/question/<question>/edit', methods=['GET', 'POST'])
@@ -96,32 +107,32 @@ def edit_question(question):
     question = int(question)
     if request.method == 'POST':
         if 'delete' in request.form:
-            db.execute("DELETE questions WHERE id = %s", (question,), None)
+            get_db_conn().execute("DELETE questions WHERE id = %s", (question,), None)
             return redirect('/manage/questions')
 
         correct = request.form['correct']
-        db.execute("UPDATE questions SET question = %s, category = %s WHERE id = %s",
-                   (request.form['question'], request.form['category'], question), True)
-        db.execute("UPDATE answers set answer = %s, correct = %s WHERE id=%s",
-                   (request.form['ansA'].strip(), correct == 'a', request.form['aid']), True)
-        db.execute("UPDATE answers set answer = %s, correct = %s WHERE id=%s",
-                   (request.form['ansB'].strip(), correct == 'b', request.form['bid']), True)
-        db.execute("UPDATE answers set answer = %s, correct = %s WHERE id=%s",
-                   (request.form['ansC'].strip(), correct == 'c', request.form['cid']), True)
-        db.execute("UPDATE answers set answer = %s, correct = %s WHERE id=%s",
-                   (request.form['ansD'].strip(), correct == 'd', request.form['did']), True)
+        get_db_conn().execute("UPDATE questions SET question = %s, category = %s WHERE id = %s",
+                              (request.form['question'], request.form['category'], question), True)
+        get_db_conn().execute("UPDATE answers set answer = %s, correct = %s WHERE id=%s",
+                              (request.form['ansA'].strip(), correct == 'a', request.form['aid']), True)
+        get_db_conn().execute("UPDATE answers set answer = %s, correct = %s WHERE id=%s",
+                              (request.form['ansB'].strip(), correct == 'b', request.form['bid']), True)
+        get_db_conn().execute("UPDATE answers set answer = %s, correct = %s WHERE id=%s",
+                              (request.form['ansC'].strip(), correct == 'c', request.form['cid']), True)
+        get_db_conn().execute("UPDATE answers set answer = %s, correct = %s WHERE id=%s",
+                              (request.form['ansD'].strip(), correct == 'd', request.form['did']), True)
 
         return redirect('/manage/question/{}/edit'.format(question))
-    return render_template('manage/questions_new.html', q=Question.get_by_id(question, db),
-                           categories=Category.fetch_all(db))
+    return render_template('manage/questions_new.html', q=Question.get_by_id(question, get_db_conn()),
+                           categories=Category.fetch_all(get_db_conn()))
 
 
 @app.route('/manage/run/<token>')
 def run_display(token):
-    res = db.execute("SELECT * FROM device_api_tokens WHERE token=%s", (token,))
+    res = get_db_conn().execute("SELECT * FROM device_api_tokens WHERE token=%s", (token,))
     if len(res) > 0:
         s = request.environ['beaker.session']
-        s['device_token'] = DeviceToken(**res[0], db=db)
+        s['device_token'] = DeviceToken(**res[0])
         s.save()
         active_displays[token].ready = False
         return redirect('/quiz')
@@ -135,41 +146,42 @@ def manage_displays():
 @app.route('/manage/arrange/<quiz>', methods=['GET', 'POST'])
 def manage_arrange_edit(quiz):
     if request.method == 'POST':
-        db.execute("UPDATE quizes SET name=%s, year=%s, public=%s WHERE id=%s",
-                   (request.form['name'], request.form['year'], request.form['public'], quiz), True)
+        get_db_conn().execute("UPDATE quizes SET name=%s, year=%s, public=%s WHERE id=%s",
+                              (request.form['name'], request.form['year'], request.form['public'], quiz), True)
         return redirect('/manage/arrange')
-    return render_template('manage/arrange_new.html', q=Quiz.get_by_id(quiz, db))
+    return render_template('manage/arrange_new.html', q=Quiz.get_by_id(quiz, get_db_conn()))
 
 
 @app.route('/manage/arrange/<quiz>/add', methods=['GET'])
 def manage_arrange_question(quiz):
-    Quiz.get_by_id(quiz, db=db).add(Question.get_by_id(db=db, id=request.args.get('id')))
+    Quiz.get_by_id(quiz, db=get_db_conn()).add(Question.get_by_id(db=get_db_conn(), id=request.args.get('id')),
+                                               db=get_db_conn())
     return redirect('/manage/questions')
 
 
 @app.route('/manage/clients', methods=['GET', 'POST'])
 def manage_arrange_device_tokens():
     if request.method == 'POST':
-        db.execute("INSERT INTO device_api_tokens (description, token) VALUES(%s, %s)",
-                   (request.form['newtoken'], str(uuid.uuid4())), True)
+        get_db_conn().execute("INSERT INTO device_api_tokens (description, token) VALUES(%s, %s)",
+                              (request.form['newtoken'], str(uuid.uuid4())), True)
         return redirect('/manage/clients')
-    return render_template('/manage/device_tokens.html', devices=DeviceToken.get_all(db))
+    return render_template('/manage/device_tokens.html', devices=DeviceToken.get_all(get_db_conn()))
 
 
 @app.route('/manage/client/<device>', methods=['POST'])
 def manage_edit_device_token(device):
     if 'delete' in request.form:
-        db.execute("DELETE FROM device_api_tokens WHERE id=%s", (device,), None)
+        get_db_conn().execute("DELETE FROM device_api_tokens WHERE id=%s", (device,), None)
     return redirect('/manage/clients')
 
 
 @app.route('/manage/arrange', methods=['GET', 'POST'])
 def manage_arrange():
     if request.method == 'POST':
-        db.execute("DELETE FROM quizes WHERE id=%s", (request.form['id']), None)
+        get_db_conn().execute("DELETE FROM quizes WHERE id=%s", (request.form['id']), None)
         return redirect("/manage/arrange")
     return render_template('manage/arrange.html',
-                           questions=[Quiz(**q, db=db) for q in db.execute("SELECT * FROM quizes")],
+                           questions=[Quiz(**q) for q in get_db_conn().execute("SELECT * FROM quizes")],
                            displays=[d for d in active_displays.values() if d.ready])
 
 
@@ -178,8 +190,8 @@ def manage_arrange_new():
     if request.method == 'POST':
         year = int(request.args.get('year', datetime.datetime.now().year))
         name = request.form['name']
-        db.execute("INSERT INTO quizes (name, year, public) VALUES(%s, %s, %s)", (name, year, 'public' in request.form),
-                   True)
+        get_db_conn().execute("INSERT INTO quizes (name, year, public) VALUES(%s, %s, %s)",
+                              (name, year, 'public' in request.form), True)
         return redirect("/manage/arrange")
     return render_template('manage/arrange_new.html')
 
@@ -201,10 +213,10 @@ def clear_session():
 @app.route('/display', methods=['GET', 'POST'])
 def display():
     if request.method == 'POST':
-        res = db.execute("SELECT * FROM device_api_tokens WHERE token=%s", (request.form['token'],))
+        res = get_db_conn().execute("SELECT * FROM device_api_tokens WHERE token=%s", (request.form['token'],))
         if len(res) > 0:
             s = request.environ['beaker.session']
-            s['device_token'] = DeviceToken(**res[0], db=db)
+            s['device_token'] = DeviceToken(**res[0])
             s.save()
             return redirect('/quiz')
     return render_template('display_login.html')
@@ -260,12 +272,4 @@ def answer_selected(message):
 
 
 if __name__ == '__main__':
-    global DEBUG, db
-    config = configparser.ConfigParser()
-    config.read("sciencequiz.ini")
-    db = PGSQLConnection(database=config.get('db', 'db'), user=config.get('db', 'user'),
-                         password=config.get('db', 'password'), host=config.get('db', 'host'),
-                         port=int(config.get('db', 'port')))
-    app.wsgi_app = SessionMiddleware(app.wsgi_app, session_opts)
-    app.debug = DEBUG
-    app.run(threaded=True, host=config.get('sciencequiz', 'host'), port=int(config.get('sciencequiz', 'port')))
+    app.run()
