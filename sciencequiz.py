@@ -105,14 +105,18 @@ def manage_questions_new():
         question = get_db_conn().execute("INSERT INTO questions (question, category) VALUES (%s, %s)",
                                          (request.form['question'], request.form['category']), True)
         correct = request.form['correct']
-        get_db_conn().execute("INSERT INTO answers (answers, answer, correct) VALUES (%s, %s, %s)",
-                              (question, request.form['ansA'].strip(), correct == 'a'), True)
-        get_db_conn().execute("INSERT INTO answers (answers, answer, correct) VALUES (%s, %s, %s)",
-                              (question, request.form['ansB'].strip(), correct == 'b'), True)
-        get_db_conn().execute("INSERT INTO answers (answers, answer, correct) VALUES (%s, %s, %s)",
-                              (question, request.form['ansC'].strip(), correct == 'c'), True)
-        get_db_conn().execute("INSERT INTO answers (answers, answer, correct) VALUES (%s, %s, %s)",
-                              (question, request.form['ansD'].strip(), correct == 'd'), True)
+        ans_ids = []
+        ans_ids.append(get_db_conn().execute("INSERT INTO answers (answers, answer) VALUES (%s, %s)",
+                                             (question, request.form['ansA'].strip()), True))
+        ans_ids.append(get_db_conn().execute("INSERT INTO answers (answers, answer) VALUES (%s, %s)",
+                                             (question, request.form['ansB'].strip()), True))
+        ans_ids.append(get_db_conn().execute("INSERT INTO answers (answers, answer) VALUES (%s, %s)",
+                                             (question, request.form['ansC'].strip()), True))
+        ans_ids.append(get_db_conn().execute("INSERT INTO answers (answers, answer) VALUES (%s, %s)",
+                                             (question, request.form['ansD'].strip()), True))
+
+        get_db_conn().execute("UPDATE questions SET correct = %s WHERE id = %s",
+                              (ans_ids[ord(correct) - 97], question), True)
         return redirect('/manage/questions/new')
     return render_template('manage/questions_new.html', categories=Category.fetch_all(get_db_conn()))
 
@@ -125,17 +129,19 @@ def edit_question(question):
             get_db_conn().execute("DELETE questions WHERE id = %s", (question,), None)
             return redirect('/manage/questions')
 
+        quest_obj = Question.get_by_id(question, get_db_conn())
         correct = request.form['correct']
-        get_db_conn().execute("UPDATE questions SET question = %s, category = %s WHERE id = %s",
-                              (request.form['question'], request.form['category'], question), True)
-        get_db_conn().execute("UPDATE answers set answer = %s, correct = %s WHERE id=%s",
-                              (request.form['ansA'].strip(), correct == 'a', request.form['aid']), True)
-        get_db_conn().execute("UPDATE answers set answer = %s, correct = %s WHERE id=%s",
-                              (request.form['ansB'].strip(), correct == 'b', request.form['bid']), True)
-        get_db_conn().execute("UPDATE answers set answer = %s, correct = %s WHERE id=%s",
-                              (request.form['ansC'].strip(), correct == 'c', request.form['cid']), True)
-        get_db_conn().execute("UPDATE answers set answer = %s, correct = %s WHERE id=%s",
-                              (request.form['ansD'].strip(), correct == 'd', request.form['did']), True)
+        get_db_conn().execute("UPDATE questions SET question = %s, category = %s, correct = %s WHERE id = %s",
+                              (request.form['question'], request.form['category'],
+                               quest_obj.answers[ord(correct) - 97].id, question), True)
+        get_db_conn().execute("UPDATE answers set answer = %s WHERE id=%s",
+                              (request.form['ansA'].strip(), request.form['aid']), True)
+        get_db_conn().execute("UPDATE answers set answer = %s WHERE id=%s",
+                              (request.form['ansB'].strip(), request.form['bid']), True)
+        get_db_conn().execute("UPDATE answers set answer = %s WHERE id=%s",
+                              (request.form['ansC'].strip(), request.form['cid']), True)
+        get_db_conn().execute("UPDATE answers set answer = %s WHERE id=%s",
+                              (request.form['ansD'].strip(), request.form['did']), True)
 
         return redirect('/manage/question/{}/edit'.format(question))
     return render_template('manage/questions_new.html', q=Question.get_by_id(question, get_db_conn()),

@@ -2,11 +2,12 @@ import hashlib
 
 
 class Question(object):
-    def __init__(self, id, question, category, image, db):
+    def __init__(self, id, question, category, image, correct, db):
         self.id = id
         self.question = question
         self.category = Category.get_by_id(category, db)
         self.answers = [Answer(**a) for a in db.execute("SELECT * FROM answers WHERE answers = %s", (self.id,))]
+        self.correct = [a for a in self.answers if a.id == correct][0]
 
     @staticmethod
     def get_by_id(id, db):
@@ -40,8 +41,7 @@ class Category(object):
 
 
 class Answer(object):
-    def __init__(self, id, correct, answer, answers):
-        self.correct = correct
+    def __init__(self, id, answer, answers):
         self.answer = answer
         self.answers = answers
         self.id = id

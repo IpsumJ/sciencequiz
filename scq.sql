@@ -41,8 +41,7 @@ SET default_with_oids = false;
 CREATE TABLE answers (
     answer text NOT NULL,
     answers integer NOT NULL,
-    id integer NOT NULL,
-    correct boolean NOT NULL
+    id integer NOT NULL
 );
 
 
@@ -165,7 +164,8 @@ CREATE TABLE questions (
     question text NOT NULL,
     image text,
     id integer NOT NULL,
-    category integer NOT NULL
+    category integer NOT NULL,
+    correct integer DEFAULT '-1'::integer NOT NULL
 );
 
 
@@ -190,6 +190,27 @@ ALTER TABLE questions_category_seq OWNER TO scq;
 --
 
 ALTER SEQUENCE questions_category_seq OWNED BY questions.category;
+
+
+--
+-- Name: questions_correct_seq; Type: SEQUENCE; Schema: public; Owner: scq
+--
+
+CREATE SEQUENCE questions_correct_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE questions_correct_seq OWNER TO scq;
+
+--
+-- Name: questions_correct_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: scq
+--
+
+ALTER SEQUENCE questions_correct_seq OWNED BY questions.correct;
 
 
 --
@@ -422,7 +443,8 @@ CREATE TABLE users (
     username character varying(100) NOT NULL,
     password character varying(512) NOT NULL,
     admin boolean NOT NULL,
-    display_name character varying(100) NOT NULL
+    display_name character varying(100) NOT NULL,
+    email character varying(100) NOT NULL
 );
 
 
@@ -681,7 +703,7 @@ ALTER TABLE ONLY answers
 --
 
 ALTER TABLE ONLY questions
-    ADD CONSTRAINT questions_categories_id_fk FOREIGN KEY (category) REFERENCES categories(id);
+    ADD CONSTRAINT questions_categories_id_fk FOREIGN KEY (category) REFERENCES categories(id) DEFERRABLE INITIALLY DEFERRED;
 
 
 --
