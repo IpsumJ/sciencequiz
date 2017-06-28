@@ -2,11 +2,12 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 9.5.3
--- Dumped by pg_dump version 9.5.3
+-- Dumped from database version 9.6.3
+-- Dumped by pg_dump version 9.6.3
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SET check_function_bodies = false;
@@ -325,14 +326,103 @@ ALTER SEQUENCE quizes_id_seq OWNED BY quizes.id;
 
 
 --
+-- Name: team_memberships; Type: TABLE; Schema: public; Owner: scq
+--
+
+CREATE TABLE team_memberships (
+    team integer NOT NULL,
+    "user" integer NOT NULL
+);
+
+
+ALTER TABLE team_memberships OWNER TO scq;
+
+--
+-- Name: team_memberships_team_seq; Type: SEQUENCE; Schema: public; Owner: scq
+--
+
+CREATE SEQUENCE team_memberships_team_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE team_memberships_team_seq OWNER TO scq;
+
+--
+-- Name: team_memberships_team_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: scq
+--
+
+ALTER SEQUENCE team_memberships_team_seq OWNED BY team_memberships.team;
+
+
+--
+-- Name: team_memberships_user_seq; Type: SEQUENCE; Schema: public; Owner: scq
+--
+
+CREATE SEQUENCE team_memberships_user_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE team_memberships_user_seq OWNER TO scq;
+
+--
+-- Name: team_memberships_user_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: scq
+--
+
+ALTER SEQUENCE team_memberships_user_seq OWNED BY team_memberships."user";
+
+
+--
+-- Name: teams; Type: TABLE; Schema: public; Owner: scq
+--
+
+CREATE TABLE teams (
+    id integer NOT NULL,
+    name character varying(100) NOT NULL,
+    year integer NOT NULL
+);
+
+
+ALTER TABLE teams OWNER TO scq;
+
+--
+-- Name: teams_id_seq; Type: SEQUENCE; Schema: public; Owner: scq
+--
+
+CREATE SEQUENCE teams_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE teams_id_seq OWNER TO scq;
+
+--
+-- Name: teams_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: scq
+--
+
+ALTER SEQUENCE teams_id_seq OWNED BY teams.id;
+
+
+--
 -- Name: users; Type: TABLE; Schema: public; Owner: scq
 --
 
 CREATE TABLE users (
     id integer NOT NULL,
     username character varying(100) NOT NULL,
-    password character varying(256) NOT NULL,
-    can_arrange_quiz boolean NOT NULL
+    password character varying(512) NOT NULL,
+    admin boolean NOT NULL,
+    display_name character varying(100) NOT NULL
 );
 
 
@@ -360,84 +450,105 @@ ALTER SEQUENCE users_id_seq OWNED BY users.id;
 
 
 --
--- Name: answers; Type: DEFAULT; Schema: public; Owner: scq
+-- Name: answers answers; Type: DEFAULT; Schema: public; Owner: scq
 --
 
 ALTER TABLE ONLY answers ALTER COLUMN answers SET DEFAULT nextval('answers_answers_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: scq
+-- Name: answers id; Type: DEFAULT; Schema: public; Owner: scq
 --
 
 ALTER TABLE ONLY answers ALTER COLUMN id SET DEFAULT nextval('answers_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: scq
+-- Name: categories id; Type: DEFAULT; Schema: public; Owner: scq
 --
 
 ALTER TABLE ONLY categories ALTER COLUMN id SET DEFAULT nextval('categories_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: scq
+-- Name: device_api_tokens id; Type: DEFAULT; Schema: public; Owner: scq
 --
 
 ALTER TABLE ONLY device_api_tokens ALTER COLUMN id SET DEFAULT nextval('device_api_tokens_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: scq
+-- Name: questions id; Type: DEFAULT; Schema: public; Owner: scq
 --
 
 ALTER TABLE ONLY questions ALTER COLUMN id SET DEFAULT nextval('questions_id_seq'::regclass);
 
 
 --
--- Name: category; Type: DEFAULT; Schema: public; Owner: scq
+-- Name: questions category; Type: DEFAULT; Schema: public; Owner: scq
 --
 
 ALTER TABLE ONLY questions ALTER COLUMN category SET DEFAULT nextval('questions_category_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: scq
+-- Name: quiz_questions id; Type: DEFAULT; Schema: public; Owner: scq
 --
 
 ALTER TABLE ONLY quiz_questions ALTER COLUMN id SET DEFAULT nextval('quiz_questsions_id_seq'::regclass);
 
 
 --
--- Name: question; Type: DEFAULT; Schema: public; Owner: scq
+-- Name: quiz_questions question; Type: DEFAULT; Schema: public; Owner: scq
 --
 
 ALTER TABLE ONLY quiz_questions ALTER COLUMN question SET DEFAULT nextval('quiz_questsions_question_seq'::regclass);
 
 
 --
--- Name: quiz; Type: DEFAULT; Schema: public; Owner: scq
+-- Name: quiz_questions quiz; Type: DEFAULT; Schema: public; Owner: scq
 --
 
 ALTER TABLE ONLY quiz_questions ALTER COLUMN quiz SET DEFAULT nextval('quiz_questions_quiz_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: scq
+-- Name: quizes id; Type: DEFAULT; Schema: public; Owner: scq
 --
 
 ALTER TABLE ONLY quizes ALTER COLUMN id SET DEFAULT nextval('quizes_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: scq
+-- Name: team_memberships team; Type: DEFAULT; Schema: public; Owner: scq
+--
+
+ALTER TABLE ONLY team_memberships ALTER COLUMN team SET DEFAULT nextval('team_memberships_team_seq'::regclass);
+
+
+--
+-- Name: team_memberships user; Type: DEFAULT; Schema: public; Owner: scq
+--
+
+ALTER TABLE ONLY team_memberships ALTER COLUMN "user" SET DEFAULT nextval('team_memberships_user_seq'::regclass);
+
+
+--
+-- Name: teams id; Type: DEFAULT; Schema: public; Owner: scq
+--
+
+ALTER TABLE ONLY teams ALTER COLUMN id SET DEFAULT nextval('teams_id_seq'::regclass);
+
+
+--
+-- Name: users id; Type: DEFAULT; Schema: public; Owner: scq
 --
 
 ALTER TABLE ONLY users ALTER COLUMN id SET DEFAULT nextval('users_id_seq'::regclass);
 
 
 --
--- Name: answers_id_pk; Type: CONSTRAINT; Schema: public; Owner: scq
+-- Name: answers answers_id_pk; Type: CONSTRAINT; Schema: public; Owner: scq
 --
 
 ALTER TABLE ONLY answers
@@ -445,7 +556,7 @@ ALTER TABLE ONLY answers
 
 
 --
--- Name: categories_pkey; Type: CONSTRAINT; Schema: public; Owner: scq
+-- Name: categories categories_pkey; Type: CONSTRAINT; Schema: public; Owner: scq
 --
 
 ALTER TABLE ONLY categories
@@ -453,7 +564,7 @@ ALTER TABLE ONLY categories
 
 
 --
--- Name: device_api_tokens_id_pk; Type: CONSTRAINT; Schema: public; Owner: scq
+-- Name: device_api_tokens device_api_tokens_id_pk; Type: CONSTRAINT; Schema: public; Owner: scq
 --
 
 ALTER TABLE ONLY device_api_tokens
@@ -461,7 +572,7 @@ ALTER TABLE ONLY device_api_tokens
 
 
 --
--- Name: questions_id_pk; Type: CONSTRAINT; Schema: public; Owner: scq
+-- Name: questions questions_id_pk; Type: CONSTRAINT; Schema: public; Owner: scq
 --
 
 ALTER TABLE ONLY questions
@@ -469,7 +580,7 @@ ALTER TABLE ONLY questions
 
 
 --
--- Name: quiz_questions_id_pk; Type: CONSTRAINT; Schema: public; Owner: scq
+-- Name: quiz_questions quiz_questions_id_pk; Type: CONSTRAINT; Schema: public; Owner: scq
 --
 
 ALTER TABLE ONLY quiz_questions
@@ -477,7 +588,7 @@ ALTER TABLE ONLY quiz_questions
 
 
 --
--- Name: quizes_id_pk; Type: CONSTRAINT; Schema: public; Owner: scq
+-- Name: quizes quizes_id_pk; Type: CONSTRAINT; Schema: public; Owner: scq
 --
 
 ALTER TABLE ONLY quizes
@@ -485,7 +596,23 @@ ALTER TABLE ONLY quizes
 
 
 --
--- Name: users_pkey; Type: CONSTRAINT; Schema: public; Owner: scq
+-- Name: team_memberships team_memberships_user_team_pk; Type: CONSTRAINT; Schema: public; Owner: scq
+--
+
+ALTER TABLE ONLY team_memberships
+    ADD CONSTRAINT team_memberships_user_team_pk PRIMARY KEY ("user", team);
+
+
+--
+-- Name: teams teams_pkey; Type: CONSTRAINT; Schema: public; Owner: scq
+--
+
+ALTER TABLE ONLY teams
+    ADD CONSTRAINT teams_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: scq
 --
 
 ALTER TABLE ONLY users
@@ -528,6 +655,13 @@ CREATE UNIQUE INDEX quizes_year_name_uindex ON quizes USING btree (year, name);
 
 
 --
+-- Name: teams_name_year_uindex; Type: INDEX; Schema: public; Owner: scq
+--
+
+CREATE UNIQUE INDEX teams_name_year_uindex ON teams USING btree (name, year);
+
+
+--
 -- Name: users_username_uindex; Type: INDEX; Schema: public; Owner: scq
 --
 
@@ -535,7 +669,7 @@ CREATE UNIQUE INDEX users_username_uindex ON users USING btree (username);
 
 
 --
--- Name: answers_questions_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: scq
+-- Name: answers answers_questions_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: scq
 --
 
 ALTER TABLE ONLY answers
@@ -543,7 +677,7 @@ ALTER TABLE ONLY answers
 
 
 --
--- Name: questions_categories_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: scq
+-- Name: questions questions_categories_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: scq
 --
 
 ALTER TABLE ONLY questions
@@ -551,7 +685,7 @@ ALTER TABLE ONLY questions
 
 
 --
--- Name: quiz_questions_quizes_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: scq
+-- Name: quiz_questions quiz_questions_quizes_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: scq
 --
 
 ALTER TABLE ONLY quiz_questions
@@ -559,7 +693,7 @@ ALTER TABLE ONLY quiz_questions
 
 
 --
--- Name: quiz_questsions_questions_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: scq
+-- Name: quiz_questions quiz_questsions_questions_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: scq
 --
 
 ALTER TABLE ONLY quiz_questions
@@ -567,13 +701,19 @@ ALTER TABLE ONLY quiz_questions
 
 
 --
--- Name: public; Type: ACL; Schema: -; Owner: postgres
+-- Name: team_memberships team_memberships_teams_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: scq
 --
 
-REVOKE ALL ON SCHEMA public FROM PUBLIC;
-REVOKE ALL ON SCHEMA public FROM postgres;
-GRANT ALL ON SCHEMA public TO postgres;
-GRANT ALL ON SCHEMA public TO PUBLIC;
+ALTER TABLE ONLY team_memberships
+    ADD CONSTRAINT team_memberships_teams_id_fk FOREIGN KEY (team) REFERENCES teams(id);
+
+
+--
+-- Name: team_memberships team_memberships_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: scq
+--
+
+ALTER TABLE ONLY team_memberships
+    ADD CONSTRAINT team_memberships_users_id_fk FOREIGN KEY ("user") REFERENCES users(id);
 
 
 --
