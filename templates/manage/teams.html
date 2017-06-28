@@ -1,0 +1,22 @@
+{% extends "manage/manage_nav.html" %}
+{% set active = 'teams' %}
+{% block title %}
+    Teams
+{% endblock %}
+{% block body %}
+    <div class="pd"><a href="/manage/teams/new" class="btn btn-success pull-right">Neues Team anlegen</a><span
+            class="clearfix"></span></div>
+    {% for t in teams %}
+        <div class="panel panel-default">
+            <div class="panel-heading">{{ t.name }}</div>
+            <table class="table">
+                {% for m in t.get_members(db) %}
+                    <tr>
+                        <td>{{ m.username }}</td>
+                        <td>{{ m.display_name }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    {% endfor %}
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "manage/manage_nav.html" %}
+{% set active = 'teams' %}
+{% block title %}
+    {% if q %}
+        Team bearbeiten
+    {% else %}
+        Neues Team erzeugen
+    {% endif %}
+{% endblock %}
+{% block body %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Team</h3>
+        </div>
+
+        <div class="panel-body">
+            <form method="post">
+                <table class="form-table">
+                    <tr>
+                        <th><label>Name</label></th>
+                        <td colspan="2"><input type="text" class="form-control" name="name"
+                                               {% if q %}value="{{ q.name }}"{% endif %}/></td>
+                    </tr>
+                    <tr>
+                        <th><label>Jahr</label></th>
+                        <td colspan="2"><input type="number" class="form-control" name="year" placeholder="{{ year }}"
+                                               {% if q %}value="{{ q.year }}"{% endif %}/></td>
+                    </tr>
+                    <tr>
+                        <td>
+                        </td>
+                        <td colspan="2">
+                            <button type="submit" class="btn btn-success pull-right">
+                                {% if not q %}Anlegen{% else %}Bearbeiten{% endif %}</button>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </div>
+{% endblock %}

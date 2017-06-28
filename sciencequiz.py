@@ -63,6 +63,21 @@ def manage_questions():
                            quizes=Quiz.get_all(get_db_conn()), db=get_db_conn())
 
 
+@app.route('/manage/teams')
+def manage_teams():
+    return render_template('manage/teams.html', teams=Team.get_all(get_db_conn()),
+                           db=get_db_conn())
+
+
+@app.route('/manage/teams/new', methods=['GET', 'POST'])
+def manage_teams_new():
+    if request.method == 'POST' and request.form['name'].strip():
+        year = request.form['year'].strip()
+        if not year:
+            year = datetime.datetime.now().year
+        Team.create(request.form['name'].strip(), year, get_db_conn())
+        return redirect('/manage/teams')
+    return render_template('manage/teams_new.html', categories=Category.fetch_all(get_db_conn()))
 
 
 @app.route('/manage/categories', methods=['GET', 'POST'])

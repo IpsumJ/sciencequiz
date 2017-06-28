@@ -10,10 +10,10 @@
         <div class="panel panel-default">
             <div class="panel-heading">{{ c.name }}</div>
             <table class="table">
-                {% for q in c.get_all_questions() %}
+                {% for q in c.get_all_questions(db) %}
                     <tr>
                         <td><a href="/manage/question/{{ q.id }}/edit">{{ q.question }}</a>
-                            {% for quiz in q.get_quizes() %}
+                            {% for quiz in q.get_quizes(db) %}
                                 <span class="label {% if quiz.public %}label-danger{% else %}label-default{% endif %}"><a
                                         href="/manage/arrange/{{ quiz.id }}">{{ quiz.name }}</a></span>{% endfor %}</td>
                         <td>
