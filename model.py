@@ -53,6 +53,7 @@ class Quiz(object):
         self.id = id
         self.name = name
         self.year = year
+        self.index = 0
 
     def get_ast_index(self, db):
         res = db.execute("SELECT index FROM quiz_questions WHERE quiz=%s ORDER BY index DESC LIMIT 1", (self.id,))
@@ -61,6 +62,15 @@ class Quiz(object):
     def add(self, question, db):
         db.execute("INSERT INTO quiz_questions (index, question, quiz) VALUES (%s, %s, %s)",
                    (self.get_ast_index(db) + 1, question.id, self.id), True)
+
+    def get_next_question(self, db):
+        self.index += 1  # hacky ;(
+        return self.get_current_question(db)
+
+    def get_current_question(self, db):
+        quests = db.execute("SELECT question FROM quiz_questions WHERE quiz = %s ORDER BY INDEX ASC", (self.id,))
+        quest = Question.get_by_id(quests[self.index]['question'], db)
+        return quest
 
     @staticmethod
     def get_by_id(quiz, db):
@@ -144,3 +154,4 @@ class Display(object):
         self.ready = True
         self.r = True
         self.w = True
+        self.current_quiz = None

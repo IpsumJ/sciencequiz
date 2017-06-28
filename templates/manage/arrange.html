@@ -31,7 +31,7 @@
                         <ul class="dropdown-menu">
                             {% for d in displays %}
                                 <li>
-                                    <a href="/manage/run/{{ d.token.token }}">{{ d.token.name }}</a>
+                                    <a href="/manage/run/{{ d.token.token }}/{{ q.id }}">{{ d.token.name }}</a>
                                 </li>
                             {% endfor %}
                             <li role="separator" class="divider"></li>

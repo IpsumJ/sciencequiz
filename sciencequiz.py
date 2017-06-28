@@ -128,7 +128,6 @@ def edit_question(question):
         if 'delete' in request.form:
             get_db_conn().execute("DELETE questions WHERE id = %s", (question,), None)
             return redirect('/manage/questions')
-
         quest_obj = Question.get_by_id(question, get_db_conn())
         correct = request.form['correct']
         get_db_conn().execute("UPDATE questions SET question = %s, category = %s, correct = %s WHERE id = %s",
@@ -148,13 +147,15 @@ def edit_question(question):
                            categories=Category.fetch_all(get_db_conn()))
 
 
-@app.route('/manage/run/<token>')
-def run_display(token):
+@app.route('/manage/run/<token>/<q>')
+def run_display(token, q):
     res = get_db_conn().execute("SELECT * FROM device_api_tokens WHERE token=%s", (token,))
     if len(res) > 0:
         s = request.environ['beaker.session']
         s['device_token'] = DeviceToken(**res[0])
         s.save()
+        active_displays[token].active_quiz = Quiz.get_by_id(q, get_db_conn())
+        print(active_displays[token].active_quiz)
         active_displays[token].ready = False
         return redirect('/quiz')
 
@@ -254,7 +255,11 @@ def quiz_connect():
         dev = s['device_token']
         emit('meta_data', {'display_name': dev.name}, room=dev.token)
         if dev.token in active_displays and not active_displays[dev.token].ready:
-            emit('question', {'question': 'Connected', 'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd'}, room=dev.token)
+            disp = active_displays[dev.token]
+            current_quest = disp.active_quiz.get_current_question(get_db_conn())
+            emit('question', {'question': current_quest.question, 'a': current_quest.answers[0].answer,
+                              'b': current_quest.answers[1].answer, 'c': current_quest.answers[2].answer,
+                              'd': current_quest.answers[3].answer}, room=dev.token)
         else:
             active_displays[dev.token] = Display(dev)
         print(s['device_token'].name, 'was added as active screen.')
@@ -279,8 +284,14 @@ def answer_selected(message):
     # answer is correct, do something
     if ans == 'c':
         pass
-
-    emit('answer_response', {'correct': 'c'}, room=disp.token.token)
+    index = ord(ans) - 97
+    correct_index = 0
+    quest = disp.active_quiz.get_current_question(get_db_conn())
+    for a in quest.answers:
+        if a.id == quest.correct.id:
+            break
+        correct_index += 1
+    emit('answer_response', {'correct': chr(97 + correct_index)}, room=disp.token.token)
 
 
 @socketio.on('answer_selected', namespace='/quiz')
@@ -293,4 +304,4 @@ def answer_selected(message):
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(threaded=True)
