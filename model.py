@@ -55,7 +55,7 @@ class Quiz(object):
         self.year = year
 
     def get_ast_index(self, db):
-        res = db.execute("SELECT index FROM quiz_questions WHERE quiz=%s ORDER BY index LIMIT 1", (self.id,))
+        res = db.execute("SELECT index FROM quiz_questions WHERE quiz=%s ORDER BY index DESC LIMIT 1", (self.id,))
         return res[0]['index'] if len(res) > 0 else 0
 
     def add(self, question, db):
