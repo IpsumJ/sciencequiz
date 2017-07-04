@@ -67,6 +67,10 @@ class Quiz(object):
         self.index += 1  # hacky ;(
         return self.get_current_question(db)
 
+    def get_prev_question(self, db):
+        self.index -= 1  # hacky ;(
+        return self.get_current_question(db)
+
     def get_current_question(self, db):
         quests = db.execute("SELECT question FROM quiz_questions WHERE quiz = %s ORDER BY INDEX ASC", (self.id,))
         quest = Question.get_by_id(quests[self.index]['question'], db)
