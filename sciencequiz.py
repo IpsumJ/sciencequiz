@@ -105,7 +105,7 @@ def manage_questions_new():
         question = get_db_conn().execute("INSERT INTO questions (question, category) VALUES (%s, %s)",
                                          (request.form['question'], request.form['category']), True)
         correct = request.form['correct']
-        ans_ids = []
+        ans_ids = list()
         ans_ids.append(get_db_conn().execute("INSERT INTO answers (answers, answer) VALUES (%s, %s)",
                                              (question, request.form['ansA'].strip()), True))
         ans_ids.append(get_db_conn().execute("INSERT INTO answers (answers, answer) VALUES (%s, %s)",
