@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block body %}
+    <p class="question" id="question">Loading...</p>
+    <div class="answerbox">
+        <div id="a" class="answer">
+            <div class="ansletter">A</div>
+            <div class="text">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor
+                invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo
+                dolores et ea rebum. Stet clita kasd gubergren,
+            </div>
+        </div>
+        <div id="b" class="answer">
+            <div class="ansletter">B</div>
+            <div class="text">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam</div>
+        </div>
+        <div id="c" class="answer">
+            <div class="ansletter">C</div>
+            <div class="text">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor
+                invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo
+                dolores et ea rebum. Stet clita kasd gubergren,
+            </div>
+        </div>
+        <div id="d" class="answer">
+            <div class="ansletter">D</div>
+            <div class="text">Lorem ipsum</div>
+        </div>
+    </div>
+    <div id="controls">
+        Frage <span class="question_number"></span>/<span class="quiz_question_count"></span> Korrekte Lösung: <span
+            class="control_correct"></span> <a href="#"
+                                               id="prev_question">Vorherige
+        Frage</a> <a href="#" id="next_question">Nächste Frage</a> Team: <span class="team_name"></span> <a href="#"
+                                                                                                            id="pause_quiz">Quiz
+        pausieren</a> <a href="#"
+                         id="cancel_quiz">Quiz
+        abbrechen</a>
+    </div>
+    <script type="text/javascript" src="/static/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/js/socket.io-1.4.5.js"></script>
+    <script type="text/javascript" src="/static/js/quiz.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            document.addEventListener('keydown', function (event) {
+                if (!running) {
+                    return
+                }
+                switch (event.keyCode) {
+                    case 65:
+                        event.preventDefault();
+                        $('#a').click();
+                        break;
+                    case 66:
+                        event.preventDefault();
+                        $('#b').click();
+                        break;
+                    case 67:
+                        event.preventDefault();
+                        $('#c').click();
+                        break;
+                    case 68:
+                        event.preventDefault();
+                        $('#d').click();
+                        break;
+                    default:
+                        break;
+                }
+            });
+            var socket = io.connect('http://' + document.domain + ':' + location.port + '/quiz');
+
+            socket.on('meta_data', function (msg) {
+                $('#name').html(msg.display_name);
+            });
+            socket.on('question', function (msg) {
+                unselect();
+                if (!running) {
+                    running = true;
+                    $('#full').addClass('hidden');
+                }
+                $('#question').html(msg.question);
+                $('#a .text').html(msg.a);
+                $('#b .text').html(msg.b);
+                $('#c .text').html(msg.c);
+                $('#d .text').html(msg.d);
+            });
+            socket.on('sleep', function (msg) {
+                if (running) {
+                    running = false;
+                    $('#pause_quiz').html("Quiz fortsetzen")
+                }
+            });
+            socket.on('wakeup', function (msg) {
+                if (!running) {
+                    running = true;
+                    $('#pause_quiz').html("Quiz pausieren")
+                }
+            });
+            socket.on('selection', function (msg) {
+                $('#' + msg.selected).click();
+            });
+            socket.on('answer_response', function (msg) {
+                var corr = msg.correct;
+                if ($(".selected").parent().attr("id") != corr) {
+                    var ele = $(".selected").parent().find(".ansletter");
+                    ele.removeClass();
+                    ele.attr("class", "ansletter wrong");
+                    var eles = $("#" + corr).find(".ansletter");
+                    eles.removeClass();
+                    eles.attr("class", "ansletter correct");
+                } else {
+                    var eles = $("#" + corr).find(".ansletter");
+                    eles.removeClass();
+                    eles.attr("class", "ansletter correctchoise");
+                }
+            });
+
+            $(".answer").each(function (i, v) {
+                $(v).hover(function () {
+                    if (!selected)
+                        $(v).find('.ansletter').toggleClass("highlight");
+                });
+            });
+
+            $(".answer").each(function (i, v) {
+                $(v).on('click', function () {
+                    if (!selected) {
+                        $(v).find('.ansletter').addClass("permahighlight");
+                        $(v).children().each(function (i, k) {
+                            $(k).addClass("selected");
+                        });
+                        socket.emit('answer_selected', {sel: $(v).context.id});
+                        window.setTimeout(function () {
+                            socket.emit('answer_selected_result', {sel: $(v).context.id});
+                        }, 1500);
+
+                        selected = true;
+                    }
+                });
+            });
+
+            $('#next_question').on('click', function () {
+                socket.emit('next_question', {});
+            });
+
+            $('#prev_question').on('click', function () {
+                socket.emit('prev_question', {});
+            });
+
+            $('#pause_quiz').on('click', function () {
+                if (running) {
+                    socket.emit('pause_quiz', {});
+                } else {
+                    socket.emit('resume_quiz', {});
+                }
+            });
+
+            $('#cancel_quiz').on('click', function () {
+                socket.emit('cancel_quiz', {});
+            });
+
+        });
+    </script>
+{% endblock %}

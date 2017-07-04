@@ -157,7 +157,7 @@ def run_display(token, q):
         active_displays[token].active_quiz = Quiz.get_by_id(q, get_db_conn())
         print(active_displays[token].active_quiz)
         active_displays[token].ready = False
-        return redirect('/quiz')
+        return redirect('/quiz_manager')
 
 
 @app.route('/manage/displays')
@@ -223,6 +223,13 @@ def manage_arrange_new():
 def quiz():
     if 'device_token' in request.environ['beaker.session']:
         return render_template('try.html')
+    return redirect('/display')
+
+
+@app.route('/quiz_manager', methods=['GET', 'POST'])
+def quiz_manage():
+    if 'device_token' in request.environ['beaker.session']:
+        return render_template('manage_display.html')
     return redirect('/display')
 
 
