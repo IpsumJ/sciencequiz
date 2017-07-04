@@ -27,8 +27,8 @@
     </div>
     <script type="text/javascript" src="/static/js/jquery.min.js"></script>
     <script type="text/javascript" src="/static/js/socket.io-1.4.5.js"></script>
+    <script type="text/javascript" src="/static/js/quiz.js"></script>
     <script type="text/javascript">
-        var running = false;
         $(document).ready(function () {
             document.addEventListener('keydown', function (event) {
                 if (!running) {
@@ -57,11 +57,12 @@
             });
             var socket = io.connect('http://' + document.domain + ':' + location.port + '/quiz');
 
-            socket.on('meta_data', function(msg) {
+            socket.on('meta_data', function (msg) {
                 $('#name').html(msg.display_name);
             });
             socket.on('question', function (msg) {
-                if(!running) {
+                unselect();
+                if (!running) {
                     running = true;
                     $('#full').addClass('hidden');
                 }
@@ -72,13 +73,20 @@
                 $('#d .text').html(msg.d);
             });
             socket.on('sleep', function (msg) {
-                if (!running) {
+                if (running) {
                     running = false;
+                    window.console.debug("Got sleep");
                     $('#full').removeClass('hidden');
                 }
             });
+            socket.on('wakeup', function (msg) {
+                if (!running) {
+                    running = true;
+                    $('#full').addClass('hidden');
+                }
+            });
             socket.on('selection', function (msg) {
-                 $('#'+msg.selected).click();
+                $('#' + msg.selected).click();
             });
             socket.on('answer_response', function (msg) {
                 var corr = msg.correct;
@@ -96,7 +104,6 @@
                 }
             });
 
-            var selected = false;
             $(".answer").each(function (i, v) {
                 $(v).hover(function () {
                     if (!selected)
