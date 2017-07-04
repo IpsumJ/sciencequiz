@@ -252,6 +252,14 @@ def display():
 
 
 # SOCKET.IO STUFF
+
+def emit_question(question, dev):
+    print("emit", question.question)
+    emit('question', {'question': question.question, 'a': question.answers[0].answer,
+                      'b': question.answers[1].answer, 'c': question.answers[2].answer,
+                      'd': question.answers[3].answer}, room=dev.token)
+
+
 @socketio.on('connect', namespace='/quiz')
 def quiz_connect():
     # emit('question', {'question': 'Connected', 'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd'})
@@ -264,9 +272,7 @@ def quiz_connect():
         if dev.token in active_displays and not active_displays[dev.token].ready:
             disp = active_displays[dev.token]
             current_quest = disp.active_quiz.get_current_question(get_db_conn())
-            emit('question', {'question': current_quest.question, 'a': current_quest.answers[0].answer,
-                              'b': current_quest.answers[1].answer, 'c': current_quest.answers[2].answer,
-                              'd': current_quest.answers[3].answer}, room=dev.token)
+            emit_question(current_quest, dev)
         else:
             active_displays[dev.token] = Display(dev)
         print(s['device_token'].name, 'was added as active screen.')
@@ -277,7 +283,7 @@ def quiz_connect():
 def quiz_disconnect():
     s = request.environ['beaker.session']['device_token']
     leave_room(s.token)
-    del (active_displays[s.token])
+    # del (active_displays[s.token])
     print('disconnect', s.name)
     pass
 
