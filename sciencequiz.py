@@ -310,5 +310,42 @@ def answer_selected(message):
     emit('selection', {'selected': ans}, room=disp.token.token)
 
 
+@socketio.on('pause_quiz', namespace='/quiz')
+def pause_quiz(message):
+    disp = active_displays[request.environ['beaker.session']['device_token'].token]
+    if not disp.w:
+        return
+    emit('sleep', {}, room=disp.token.token)
+
+
+@socketio.on('resume_quiz', namespace='/quiz')
+def resmue_quiz(message):
+    disp = active_displays[request.environ['beaker.session']['device_token'].token]
+    if not disp.w:
+        return
+    emit('wakeup', {}, room=disp.token.token)
+
+
+@socketio.on('next_question', namespace='/quiz')
+def next_q(message):
+    dev = request.environ['beaker.session']['device_token']
+    disp = active_displays[dev.token]
+    emit_question(disp.active_quiz.get_next_question(get_db_conn()), dev)
+
+
+@socketio.on('prev_question', namespace='/quiz')
+def prev_q(message):
+    dev = request.environ['beaker.session']['device_token']
+    disp = active_displays[dev.token]
+    emit_question(disp.active_quiz.get_prev_question(get_db_conn()), dev)
+
+
+@socketio.on('cancel_quiz', namespace='/quiz')
+def cancel_quiz(message):
+    dev = request.environ['beaker.session']['device_token']
+    disp = active_displays[dev.token]
+
+
+
 if __name__ == '__main__':
     app.run(threaded=True)
