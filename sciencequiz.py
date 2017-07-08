@@ -354,4 +354,4 @@ def cancel_quiz(message):
 
 
 if __name__ == '__main__':
-    app.run(threaded=True)
+    app.run(port=app.config.get('PORT'), threaded=True)
