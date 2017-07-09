@@ -10,10 +10,10 @@
         <div class="panel panel-default">
             <div class="panel-heading">{{ c.name }}</div>
             <table class="table">
-                {% for q in c.get_all_questions(db) %}
+                {% for q in c.questions %}
                     <tr>
                         <td><a href="/manage/question/{{ q.id }}/edit">{{ q.question }}</a>
-                            {% for quiz in q.get_quizes(db) %}
+                            {% for quiz in q.quizzes %}
                                 <span class="label {% if quiz.public %}label-danger{% else %}label-default{% endif %}"><a
                                         href="/manage/arrange/{{ quiz.id }}">{{ quiz.name }}</a></span>{% endfor %}</td>
                         <td>
@@ -29,7 +29,7 @@
                                         class="caret"></span>
                                 </button>
                                 <ul class="dropdown-menu">
-                                    {% for quiz in quizes %}
+                                    {% for quiz in quizzes %}
                                         <li>
                                             <a href="/manage/arrange/{{ quiz.id }}/add?id={{ q.id }}">{{ quiz.name }}</a>
                                         </li>

@@ -1,155 +1,78 @@
-import hashlib
+from sciencequiz import db
+
+association_quiz_questions = db.Table('quiz_questions', db.Model.metadata,
+                                      db.Column('quiz', db.Integer, db.ForeignKey('quizzes.id')),
+                                      db.Column('question', db.Integer, db.ForeignKey('questions.id'))
+                                      )
 
 
-class Question(object):
-    def __init__(self, id, question, category, image, correct, db):
-        self.id = id
-        self.question = question
-        self.category = Category.get_by_id(category, db)
-        self.answers = [Answer(**a) for a in db.execute("SELECT * FROM answers WHERE answers = %s", (self.id,))]
-        self.correct = [a for a in self.answers if a.id == correct][0]
-
-    @staticmethod
-    def get_by_id(id, db):
-        return Question(db=db, **db.execute("SELECT * FROM questions WHERE id = %s", (id,))[0])
-
-    def get_quizes(self, db):
-        return [Quiz.get_by_id(res['quiz'], db) for res in
-                db.execute("SELECT quiz FROM quiz_questions WHERE question=%s", (self.id,))]
+class Category(db.Model):
+    __tablename__ = 'categories'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250), nullable=False)
+    questions = db.relationship("Question")
 
 
-class Category(object):
-    def __init__(self, id, name):
-        self.id = int(id)
-        self.name = str(name)
-
-    def get_all_questions(self, db):
-        return [Question(db=db, **q) for q in
-                db.execute("SELECT * FROM questions WHERE category = %s", (self.id,))]
-
-    @staticmethod
-    def get_by_id(cat, db):
-        return Category(**db.execute("SELECT * FROM categories WHERE id = %s", (cat,))[0])
-
-    @staticmethod
-    def fetch_all(db):
-        res = db.execute("SELECT * FROM categories")
-        categories = []
-        for r in res:
-            categories.append(Category(**r))
-        return categories
+class Question(db.Model):
+    __tablename__ = 'questions'
+    id = db.Column(db.Integer, primary_key=True)
+    question = db.Column(db.String(500), nullable=False)
+    category = db.Column(db.ForeignKey('categories.id'), nullable=False)
+    correct_answer = db.Column(db.ForeignKey('answers.id'), nullable=True)  # arrrrgh!
+    answers = db.relationship('Answer', foreign_keys='[Answer.question]', backref='Answer.question',
+                              cascade='all,delete')
+    quizzes = db.relationship('Quiz', secondary=association_quiz_questions,
+                              back_populates='questions')
 
 
-class Answer(object):
-    def __init__(self, id, answer, answers):
-        self.answer = answer
-        self.answers = answers
-        self.id = id
+class Answer(db.Model):
+    __tablename__ = 'answers'
+    id = db.Column(db.Integer, primary_key=True)
+    question = db.Column(db.ForeignKey('questions.id', ondelete='CASCADE'), nullable=False)
+    answer = db.Column(db.String(250), nullable=False)
 
 
-class Quiz(object):
-    def __init__(self, id, name, year, public):
-        self.public = public
-        self.id = id
-        self.name = name
-        self.year = year
-        self.index = 0
-
-    def get_ast_index(self, db):
-        res = db.execute("SELECT index FROM quiz_questions WHERE quiz=%s ORDER BY index DESC LIMIT 1", (self.id,))
-        return res[0]['index'] if len(res) > 0 else 0
-
-    def add(self, question, db):
-        db.execute("INSERT INTO quiz_questions (index, question, quiz) VALUES (%s, %s, %s)",
-                   (self.get_ast_index(db) + 1, question.id, self.id), True)
-
-    def get_next_question(self, db):
-        self.index += 1  # hacky ;(
-        return self.get_current_question(db)
-
-    def get_prev_question(self, db):
-        self.index -= 1  # hacky ;(
-        return self.get_current_question(db)
-
-    def get_current_question(self, db):
-        quests = db.execute("SELECT question FROM quiz_questions WHERE quiz = %s ORDER BY INDEX ASC", (self.id,))
-        quest = Question.get_by_id(quests[self.index]['question'], db)
-        return quest
-
-    @staticmethod
-    def get_by_id(quiz, db):
-        return Quiz(**db.execute("SELECT * FROM quizes WHERE id = %s", (quiz,))[0])
-
-    @staticmethod
-    def get_all(db):
-        return [Quiz(**r) for r in db.execute("SELECT * FROM quizes")]
+class Quiz(db.Model):
+    __tablename__ = 'quizzes'
+    id = db.Column(db.Integer, primary_key=True)
+    public = db.Column(db.Boolean, nullable=False)
+    name = db.Column(db.String(250), nullable=False)
+    year = db.Column(db.Integer, nullable=False)
+    questions = db.relationship("Question", secondary=association_quiz_questions,
+                                back_populates="quizzes")
 
 
-class DeviceToken(object):
-    def __init__(self, id, description, token):
-        self.id = id
-        self.name = description
-        self.token = token
-
-    @staticmethod
-    def get_all(db):
-        return [DeviceToken(**d) for d in db.execute("SELECT * FROM device_api_tokens")]
+class DeviceToken(db.Model):
+    __tablename__ = 'device_tokens'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250), nullable=False)
+    token = db.Column(db.String(250), nullable=False, unique=True)
 
 
-class Team(object):
-    def __init__(self, id, name, year):
-        self.id = id
-        self.name = name
-        self.year = year
-
-    def get_members(self, db):
-        members = db.execute(
-            "SELECT id, username, admin, display_name FROM users LEFT JOIN team_memberships ON team_memberships.user = users.id where team_memberships.team = %s",
-            (self.id,))
-        return [User(**u) for u in members]
-
-    def add_member(self, user, db):
-        db.ececute("INSERT INTO team_memberships (team, user) VALUES(%s, %s)", (self.id, user.id), insert=True)
-
-    @staticmethod
-    def create(name, year, db):
-        db.execute("INSERT INTO teams (name, year) VALUES(%s, %s)", (name, year), insert=True)
-
-    @staticmethod
-    def get_all(db):
-        res = db.execute("SELECT * FROM teams")
-        return [Team(**t) for t in res]
+class Team(db.Model):
+    __tablename__ = 'teams'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250), nullable=False)
+    year = db.Column(db.Integer, nullable=False)
 
 
-class User(object):
-    def __init__(self, id, username, admin, display_name, email):
-        self.id = id
-        self.username = username
-        self.admin = admin
-        self.display_name = display_name
-        self.email = email
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), nullable=False)
+    display_name = db.Column(db.String(150), nullable=False)
+    password = db.Column(db.String(150), nullable=False)
+    email = db.Column(db.String(250), nullable=False)
 
-    @staticmethod
-    def login(username, password, db):
-        m = hashlib.sha512()
-        m.update(password.encode('utf-8'))
-        res = db.execute("SELECT id, username, admin, display_name FROM users WHERE username=%s AND password=%s",
-                         (username, m.hexdigest()))
-        if len(res) == 0:
-            return None
-        return User(**res[0])
-
-    @staticmethod
-    def create(username, password, admin, display_name, email, db):
-        m = hashlib.sha512()
-        m.update(password.encode('utf-8'))
-        db.execute("INSERT INTO users (username, password, admin, display_name, email) VALUES (%s, %s, %s, %s, %s)",
-                   (username, m.hexdigest(), admin, display_name, email), insert=True)
-
-    @staticmethod
-    def get_all(db):
-        res = db.execute("SELECT username, admin, display_name, email FROM users")
-        return [User(**r) for r in res]
+    # @staticmethod
+    # def login(username, password, db):
+    #    m = hashlib.sha512()
+    #    m.update(password.encode('utf-8'))
+    #    res = db.execute("SELECT id, username, admin, display_name FROM users WHERE username=%s AND password=%s",
+    #                     (username, m.hexdigest()))
+    #    if len(res) == 0:
+    #        return None
+    #    return User(**res[0])
 
 
 class Display(object):
@@ -159,3 +82,4 @@ class Display(object):
         self.r = True
         self.w = True
         self.current_quiz = None
+        self.quiz_index = 0
