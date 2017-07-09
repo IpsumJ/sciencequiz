@@ -347,6 +347,158 @@ ALTER SEQUENCE quizes_id_seq OWNED BY quizes.id;
 
 
 --
+-- Name: sessions; Type: TABLE; Schema: public; Owner: scq
+--
+
+CREATE TABLE sessions (
+    id integer NOT NULL,
+    quiz integer NOT NULL,
+    team integer NOT NULL
+);
+
+
+ALTER TABLE sessions OWNER TO scq;
+
+--
+-- Name: sessions_id_seq; Type: SEQUENCE; Schema: public; Owner: scq
+--
+
+CREATE SEQUENCE sessions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE sessions_id_seq OWNER TO scq;
+
+--
+-- Name: sessions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: scq
+--
+
+ALTER SEQUENCE sessions_id_seq OWNED BY sessions.id;
+
+
+--
+-- Name: sessions_quiz_seq; Type: SEQUENCE; Schema: public; Owner: scq
+--
+
+CREATE SEQUENCE sessions_quiz_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE sessions_quiz_seq OWNER TO scq;
+
+--
+-- Name: sessions_quiz_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: scq
+--
+
+ALTER SEQUENCE sessions_quiz_seq OWNED BY sessions.quiz;
+
+
+--
+-- Name: sessions_team_seq; Type: SEQUENCE; Schema: public; Owner: scq
+--
+
+CREATE SEQUENCE sessions_team_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE sessions_team_seq OWNER TO scq;
+
+--
+-- Name: sessions_team_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: scq
+--
+
+ALTER SEQUENCE sessions_team_seq OWNED BY sessions.team;
+
+
+--
+-- Name: team_answers; Type: TABLE; Schema: public; Owner: scq
+--
+
+CREATE TABLE team_answers (
+    id integer NOT NULL,
+    team_session integer NOT NULL,
+    answer integer NOT NULL
+);
+
+
+ALTER TABLE team_answers OWNER TO scq;
+
+--
+-- Name: team_answers_answer_seq; Type: SEQUENCE; Schema: public; Owner: scq
+--
+
+CREATE SEQUENCE team_answers_answer_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE team_answers_answer_seq OWNER TO scq;
+
+--
+-- Name: team_answers_answer_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: scq
+--
+
+ALTER SEQUENCE team_answers_answer_seq OWNED BY team_answers.answer;
+
+
+--
+-- Name: team_answers_id_seq; Type: SEQUENCE; Schema: public; Owner: scq
+--
+
+CREATE SEQUENCE team_answers_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE team_answers_id_seq OWNER TO scq;
+
+--
+-- Name: team_answers_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: scq
+--
+
+ALTER SEQUENCE team_answers_id_seq OWNED BY team_answers.id;
+
+
+--
+-- Name: team_answers_team_session_seq; Type: SEQUENCE; Schema: public; Owner: scq
+--
+
+CREATE SEQUENCE team_answers_team_session_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE team_answers_team_session_seq OWNER TO scq;
+
+--
+-- Name: team_answers_team_session_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: scq
+--
+
+ALTER SEQUENCE team_answers_team_session_seq OWNED BY team_answers.team_session;
+
+
+--
 -- Name: team_memberships; Type: TABLE; Schema: public; Owner: scq
 --
 
@@ -398,6 +550,82 @@ ALTER TABLE team_memberships_user_seq OWNER TO scq;
 --
 
 ALTER SEQUENCE team_memberships_user_seq OWNED BY team_memberships."user";
+
+
+--
+-- Name: team_sessions; Type: TABLE; Schema: public; Owner: scq
+--
+
+CREATE TABLE team_sessions (
+    id integer NOT NULL,
+    team integer NOT NULL,
+    session integer NOT NULL
+);
+
+
+ALTER TABLE team_sessions OWNER TO scq;
+
+--
+-- Name: team_sessions_id_seq; Type: SEQUENCE; Schema: public; Owner: scq
+--
+
+CREATE SEQUENCE team_sessions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE team_sessions_id_seq OWNER TO scq;
+
+--
+-- Name: team_sessions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: scq
+--
+
+ALTER SEQUENCE team_sessions_id_seq OWNED BY team_sessions.id;
+
+
+--
+-- Name: team_sessions_session_seq; Type: SEQUENCE; Schema: public; Owner: scq
+--
+
+CREATE SEQUENCE team_sessions_session_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE team_sessions_session_seq OWNER TO scq;
+
+--
+-- Name: team_sessions_session_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: scq
+--
+
+ALTER SEQUENCE team_sessions_session_seq OWNED BY team_sessions.session;
+
+
+--
+-- Name: team_sessions_team_seq; Type: SEQUENCE; Schema: public; Owner: scq
+--
+
+CREATE SEQUENCE team_sessions_team_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE team_sessions_team_seq OWNER TO scq;
+
+--
+-- Name: team_sessions_team_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: scq
+--
+
+ALTER SEQUENCE team_sessions_team_seq OWNED BY team_sessions.team;
 
 
 --
@@ -542,6 +770,48 @@ ALTER TABLE ONLY quizes ALTER COLUMN id SET DEFAULT nextval('quizes_id_seq'::reg
 
 
 --
+-- Name: sessions id; Type: DEFAULT; Schema: public; Owner: scq
+--
+
+ALTER TABLE ONLY sessions ALTER COLUMN id SET DEFAULT nextval('sessions_id_seq'::regclass);
+
+
+--
+-- Name: sessions quiz; Type: DEFAULT; Schema: public; Owner: scq
+--
+
+ALTER TABLE ONLY sessions ALTER COLUMN quiz SET DEFAULT nextval('sessions_quiz_seq'::regclass);
+
+
+--
+-- Name: sessions team; Type: DEFAULT; Schema: public; Owner: scq
+--
+
+ALTER TABLE ONLY sessions ALTER COLUMN team SET DEFAULT nextval('sessions_team_seq'::regclass);
+
+
+--
+-- Name: team_answers id; Type: DEFAULT; Schema: public; Owner: scq
+--
+
+ALTER TABLE ONLY team_answers ALTER COLUMN id SET DEFAULT nextval('team_answers_id_seq'::regclass);
+
+
+--
+-- Name: team_answers team_session; Type: DEFAULT; Schema: public; Owner: scq
+--
+
+ALTER TABLE ONLY team_answers ALTER COLUMN team_session SET DEFAULT nextval('team_answers_team_session_seq'::regclass);
+
+
+--
+-- Name: team_answers answer; Type: DEFAULT; Schema: public; Owner: scq
+--
+
+ALTER TABLE ONLY team_answers ALTER COLUMN answer SET DEFAULT nextval('team_answers_answer_seq'::regclass);
+
+
+--
 -- Name: team_memberships team; Type: DEFAULT; Schema: public; Owner: scq
 --
 
@@ -553,6 +823,27 @@ ALTER TABLE ONLY team_memberships ALTER COLUMN team SET DEFAULT nextval('team_me
 --
 
 ALTER TABLE ONLY team_memberships ALTER COLUMN "user" SET DEFAULT nextval('team_memberships_user_seq'::regclass);
+
+
+--
+-- Name: team_sessions id; Type: DEFAULT; Schema: public; Owner: scq
+--
+
+ALTER TABLE ONLY team_sessions ALTER COLUMN id SET DEFAULT nextval('team_sessions_id_seq'::regclass);
+
+
+--
+-- Name: team_sessions team; Type: DEFAULT; Schema: public; Owner: scq
+--
+
+ALTER TABLE ONLY team_sessions ALTER COLUMN team SET DEFAULT nextval('team_sessions_team_seq'::regclass);
+
+
+--
+-- Name: team_sessions session; Type: DEFAULT; Schema: public; Owner: scq
+--
+
+ALTER TABLE ONLY team_sessions ALTER COLUMN session SET DEFAULT nextval('team_sessions_session_seq'::regclass);
 
 
 --
@@ -618,11 +909,27 @@ ALTER TABLE ONLY quizes
 
 
 --
+-- Name: sessions sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: scq
+--
+
+ALTER TABLE ONLY sessions
+    ADD CONSTRAINT sessions_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: team_memberships team_memberships_user_team_pk; Type: CONSTRAINT; Schema: public; Owner: scq
 --
 
 ALTER TABLE ONLY team_memberships
     ADD CONSTRAINT team_memberships_user_team_pk PRIMARY KEY ("user", team);
+
+
+--
+-- Name: team_sessions team_sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: scq
+--
+
+ALTER TABLE ONLY team_sessions
+    ADD CONSTRAINT team_sessions_pkey PRIMARY KEY (id);
 
 
 --
@@ -677,6 +984,13 @@ CREATE UNIQUE INDEX quizes_year_name_uindex ON quizes USING btree (year, name);
 
 
 --
+-- Name: team_sessions_team_session_uindex; Type: INDEX; Schema: public; Owner: scq
+--
+
+CREATE UNIQUE INDEX team_sessions_team_session_uindex ON team_sessions USING btree (team, session);
+
+
+--
 -- Name: teams_name_year_uindex; Type: INDEX; Schema: public; Owner: scq
 --
 
@@ -723,6 +1037,38 @@ ALTER TABLE ONLY quiz_questions
 
 
 --
+-- Name: sessions sessions_quizes_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: scq
+--
+
+ALTER TABLE ONLY sessions
+    ADD CONSTRAINT sessions_quizes_id_fk FOREIGN KEY (quiz) REFERENCES quizes(id);
+
+
+--
+-- Name: sessions sessions_teams_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: scq
+--
+
+ALTER TABLE ONLY sessions
+    ADD CONSTRAINT sessions_teams_id_fk FOREIGN KEY (team) REFERENCES teams(id);
+
+
+--
+-- Name: team_answers team_answers_answers_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: scq
+--
+
+ALTER TABLE ONLY team_answers
+    ADD CONSTRAINT team_answers_answers_id_fk FOREIGN KEY (answer) REFERENCES answers(id);
+
+
+--
+-- Name: team_answers team_answers_team_sessions_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: scq
+--
+
+ALTER TABLE ONLY team_answers
+    ADD CONSTRAINT team_answers_team_sessions_id_fk FOREIGN KEY (team_session) REFERENCES team_sessions(id);
+
+
+--
 -- Name: team_memberships team_memberships_teams_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: scq
 --
 
@@ -736,6 +1082,22 @@ ALTER TABLE ONLY team_memberships
 
 ALTER TABLE ONLY team_memberships
     ADD CONSTRAINT team_memberships_users_id_fk FOREIGN KEY ("user") REFERENCES users(id);
+
+
+--
+-- Name: team_sessions team_sessions_sessions_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: scq
+--
+
+ALTER TABLE ONLY team_sessions
+    ADD CONSTRAINT team_sessions_sessions_id_fk FOREIGN KEY (session) REFERENCES sessions(id);
+
+
+--
+-- Name: team_sessions team_sessions_teams_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: scq
+--
+
+ALTER TABLE ONLY team_sessions
+    ADD CONSTRAINT team_sessions_teams_id_fk FOREIGN KEY (team) REFERENCES teams(id);
 
 
 --
