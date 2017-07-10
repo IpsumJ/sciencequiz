@@ -1,10 +1,10 @@
 from sciencequiz import db
+import enum
 
 association_quiz_questions = db.Table('quiz_questions', db.Model.metadata,
                                       db.Column('quiz', db.Integer, db.ForeignKey('quizzes.id')),
                                       db.Column('question', db.Integer, db.ForeignKey('questions.id'))
                                       )
-
 
 class Category(db.Model):
     __tablename__ = 'categories'
@@ -13,22 +13,43 @@ class Category(db.Model):
     questions = db.relationship("Question")
 
 
+class QuestionType(enum.Enum):
+    choose = 1
+    estimate = 2
+
+
 class Question(db.Model):
     __tablename__ = 'questions'
     id = db.Column(db.Integer, primary_key=True)
     question = db.Column(db.String(500), nullable=False)
     category = db.Column(db.ForeignKey('categories.id'), nullable=False)
-    correct_answer = db.Column(db.ForeignKey('answers.id'), nullable=True)  # arrrrgh!
-    answers = db.relationship('Answer', foreign_keys='[Answer.question]', backref='Answer.question',
-                              cascade='all,delete')
     quizzes = db.relationship('Quiz', secondary=association_quiz_questions,
                               back_populates='questions')
+    type = db.Column(db.Enum(QuestionType))
+    __mapper_args__ = {
+        'polymorphic_on': type
+    }
 
 
-class Answer(db.Model):
-    __tablename__ = 'answers'
+class QuestionChoose(Question):
+    correct_answer = db.Column(db.ForeignKey('answers_choose.id'), nullable=True)  # Has to be nullable because of inheritance. Use join instead?
+    answers = db.relationship('AnswerChoose', foreign_keys='[AnswerChoose.question]')
+    __mapper_args__ = {
+        'polymorphic_identity': QuestionType.choose
+    }
+
+    
+class QuestionEstimate(Question):
+    correct_value = db.Column(db.Float, nullable=True)
+    __mapper_args__ = {
+        'polymorphic_identity': QuestionType.estimate
+    }
+
+
+class AnswerChoose(db.Model):
+    __tablename__ = 'answers_choose'
     id = db.Column(db.Integer, primary_key=True)
-    question = db.Column(db.ForeignKey('questions.id', ondelete='CASCADE'), nullable=False)
+    question = db.Column(db.ForeignKey('questions.id', ondelete='CASCADE'), nullable=False)  # Can we specify this is only valid for QuestionChoose?
     answer = db.Column(db.String(250), nullable=False)
 
 
@@ -54,6 +75,8 @@ class Team(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(250), nullable=False)
     year = db.Column(db.Integer, nullable=False)
+    team_sessions = db.relationship('TeamSession')
+    members = db.relationship('User')
 
 
 class User(db.Model):
@@ -63,6 +86,7 @@ class User(db.Model):
     display_name = db.Column(db.String(150), nullable=False)
     password = db.Column(db.String(150), nullable=False)
     email = db.Column(db.String(250), nullable=False)
+    team = db.Column(db.ForeignKey('teams.id'), nullable=True)
 
     # @staticmethod
     # def login(username, password, db):
@@ -73,6 +97,40 @@ class User(db.Model):
     #    if len(res) == 0:
     #        return None
     #    return User(**res[0])
+
+class Session(db.Model):
+    __tablename__ = 'sessions'
+    id = db.Column(db.Integer, primary_key=True)
+    quiz = db.Column(db.ForeignKey('quizzes.id'), nullable=False)
+    team_sessions = db.relationship('TeamSession')
+
+class TeamSession(db.Model):
+    __tablename__ = 'team_sessions'
+    id = db.Column(db.Integer, primary_key=True)
+    team = db.Column(db.ForeignKey('teams.id'), nullable=False)
+    session = db.Column(db.ForeignKey('sessions.id'), nullable=False)
+
+
+class TeamAnswer(db.Model):
+    __tablename__ = 'team_answers'
+    id = db.Column(db.Integer, primary_key=True)
+    team_session = db.Column(db.ForeignKey('team_sessions.id'), nullable=False)
+    type = db.Column(db.Enum(QuestionType))
+    __mapper_args__ = {
+        'polymorphic_on': type
+    }
+
+class TeamAnswerChoose(TeamAnswer):
+    answer = db.Column(db.ForeignKey('answers_choose.id'), nullable=True)
+    __mapper_args__ = {
+        'polymorphic_identity': QuestionType.choose
+    }
+
+class TeamAnswerEstimate(TeamAnswer):
+    estimate = db.Column(db.Float, nullable=True)
+    __mapper_args__ = {
+        'polymorphic_identity': QuestionType.estimate
+    }
 
 
 class Display(object):

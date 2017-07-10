@@ -10,7 +10,7 @@
         <div class="panel panel-default">
             <div class="panel-heading">{{ t.name }}</div>
             <table class="table">
-                {% for m in t.get_members(db) %}
+                {% for m in t.members %}
                     <tr>
                         <td>{{ m.username }}</td>
                         <td>{{ m.display_name }}</td>

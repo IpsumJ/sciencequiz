@@ -108,12 +108,12 @@ def manage_questions_new():
     if request.method == 'POST' and request.form['ansA'].strip() and request.form['ansB'].strip() and \
             request.form['ansC'].strip() and request.form['ansD'].strip():
         print(request.form['category'])
-        question = Question(question=request.form['question'], category=request.form['category'])
+        question = QuestionChoose(question=request.form['question'], category=request.form['category'])
         correct = ord(request.form['correct'].upper())
         correct_answer = None
         # db.mapper(Question, db.metadata.tables['questions'], non_primary=True, properties={'correct_answer': db.relationship(Answer)})
         for i in range(ord('A'), ord('E')):
-            a = Answer(question=question, answer=request.form['ans' + chr(i)])
+            a = AnswerChoose(question=question, answer=request.form['ans' + chr(i)])
             question.answers.append(a)
             if i == correct:
                 correct_answer = a
@@ -137,18 +137,18 @@ def edit_question(question):
             Question.query.filter_by(id=question).delete()
             db.session.commit()
             return redirect('/manage/questions')
-        quest_obj = Question.query.get(question)
+        quest_obj = QuestionChoose.query.get(question)
         correct = request.form['correct']
         quest_obj.question = request.form['question']
         quest_obj.category = request.form['category'],
         quest_obj.correct_answer = quest_obj.answers[ord(correct) - 97].id
 
-        Answer.query.get(request.form['aid']).answer = request.form['ansA'].strip()
-        Answer.query.get(request.form['bid']).answer = request.form['ansB'].strip()
-        Answer.query.get(request.form['cid']).answer = request.form['ansC'].strip()
-        Answer.query.get(request.form['did']).answer = request.form['ansD'].strip()
+        AnswerChoose.query.get(request.form['aid']).answer = request.form['ansA'].strip()
+        AnswerChoose.query.get(request.form['bid']).answer = request.form['ansB'].strip()
+        AnswerChoose.query.get(request.form['cid']).answer = request.form['ansC'].strip()
+        AnswerChoose.query.get(request.form['did']).answer = request.form['ansD'].strip()
         db.session.commit()
-        return redirect('/manage/question/{}/edit'.format(question))
+        return redirect('/manage/questions')
     q = Question.query.get(question)
     cat = Category.query.all()
     db.session.commit()
