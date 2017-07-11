@@ -154,7 +154,9 @@
             });
 
             $('#cancel_quiz').on('click', function () {
-                socket.emit('cancel_quiz', {});
+                socket.emit('cancel_quiz', {}, function() {
+                    window.location = 'http://' + document.domain + ':' + location.port + '/manage/arrange';
+                });
             });
 
         });

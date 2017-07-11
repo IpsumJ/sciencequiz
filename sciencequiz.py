@@ -376,6 +376,10 @@ def prev_q(message):
 def cancel_quiz(message):
     dev = request.environ['beaker.session']['device_token']
     disp = active_displays[dev.token]
+    disp.ready = True
+    disp.active_quiz = None
+    print('Sleep quiz')
+    emit('sleep', {}, room=disp.token.token)
 
 
 if __name__ == '__main__':
