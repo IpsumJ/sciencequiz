@@ -12,16 +12,15 @@
             <table class="table">
                 {% for q in c.questions %}
                     <tr>
-                        <td><a href="/manage/question/{{ q.id }}/edit">{{ q.question }}</a>
+                        <td>{{ q.question }}
                             {% for quiz in q.quizzes %}
                                 <span class="label {% if quiz.public %}label-danger{% else %}label-default{% endif %}"><a
                                         href="/manage/arrange/{{ quiz.id }}">{{ quiz.name }}</a></span>{% endfor %}</td>
                         <td>
-                            <form method="post" action="/manage/question/{{ q.id }}/edit">
-                                <button type="submit" name="delete" class="btn btn-danger pull-right"><span
-                                        class="glyphicon glyphicon-trash" aria-hidden="true"></span></button>
-                            </form>
-                            <div class="btn-group pull-right">
+                        <span class="pull-right">
+                        <a class="btn btn-primary" href="/manage/question/{{ q.id }}/edit"><span
+                                class="glyphicon glyphicon-edit" aria-hidden="true"></span></a>
+                            <div class="btn-group">
                                 <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown"
                                         aria-haspopup="true"
                                         aria-expanded="false"><span
@@ -37,7 +36,12 @@
                                     <li role="separator" class="divider"></li>
                                     <li><a href="/manage/arrange/new">Neues Quiz anlegen</a></li>
                                 </ul>
+                            &nbsp;<form class="pull-right" method="post" action="/manage/question/{{ q.id }}/edit">
+                                <button type="submit" name="delete" class="btn btn-danger"><span
+                                        class="glyphicon glyphicon-trash" aria-hidden="true"></span></button>
+                            </form>
                             </div>
+                        </span>
                         </td>
                     </tr>
                 {% endfor %}
