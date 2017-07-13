@@ -23,6 +23,7 @@ class Question(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     question = db.Column(db.String(500), nullable=False)
     category = db.Column(db.ForeignKey('categories.id'), nullable=False)
+    image_file_name = db.Column(db.String(200), nullable=True)  # Optionales Bilds zur Frage
     quizzes = db.relationship('Quiz', secondary=association_quiz_questions,
                               back_populates='questions')
     type = db.Column(db.Enum(QuestionType))
