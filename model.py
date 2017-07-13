@@ -6,6 +6,7 @@ association_quiz_questions = db.Table('quiz_questions', db.Model.metadata,
                                       db.Column('question', db.Integer, db.ForeignKey('questions.id'))
                                       )
 
+
 class Category(db.Model):
     __tablename__ = 'categories'
     id = db.Column(db.Integer, primary_key=True)
@@ -33,13 +34,14 @@ class Question(db.Model):
 
 
 class QuestionChoose(Question):
-    correct_answer = db.Column(db.ForeignKey('answers_choose.id'), nullable=True)  # Has to be nullable because of inheritance. Use join instead?
+    correct_answer = db.Column(db.ForeignKey('answers_choose.id'),
+                               nullable=True)  # Has to be nullable because of inheritance. Use join instead?
     answers = db.relationship('AnswerChoose', foreign_keys='[AnswerChoose.question]')
     __mapper_args__ = {
         'polymorphic_identity': QuestionType.choose
     }
 
-    
+
 class QuestionEstimate(Question):
     correct_value = db.Column(db.Float, nullable=True)
     __mapper_args__ = {
@@ -50,7 +52,8 @@ class QuestionEstimate(Question):
 class AnswerChoose(db.Model):
     __tablename__ = 'answers_choose'
     id = db.Column(db.Integer, primary_key=True)
-    question = db.Column(db.ForeignKey('questions.id', ondelete='CASCADE'), nullable=False)  # Can we specify this is only valid for QuestionChoose?
+    question = db.Column(db.ForeignKey('questions.id', ondelete='CASCADE'),
+                         nullable=False)  # Can we specify this is only valid for QuestionChoose?
     answer = db.Column(db.String(250), nullable=False)
 
 
@@ -99,11 +102,13 @@ class User(db.Model):
     #        return None
     #    return User(**res[0])
 
+
 class Session(db.Model):
     __tablename__ = 'sessions'
     id = db.Column(db.Integer, primary_key=True)
     quiz = db.Column(db.ForeignKey('quizzes.id'), nullable=False)
     team_sessions = db.relationship('TeamSession')
+
 
 class TeamSession(db.Model):
     __tablename__ = 'team_sessions'
@@ -121,11 +126,13 @@ class TeamAnswer(db.Model):
         'polymorphic_on': type
     }
 
+
 class TeamAnswerChoose(TeamAnswer):
     answer = db.Column(db.ForeignKey('answers_choose.id'), nullable=True)
     __mapper_args__ = {
         'polymorphic_identity': QuestionType.choose
     }
+
 
 class TeamAnswerEstimate(TeamAnswer):
     estimate = db.Column(db.Float, nullable=True)
