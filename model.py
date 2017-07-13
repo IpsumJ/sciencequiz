@@ -103,11 +103,18 @@ class User(db.Model):
     #    return User(**res[0])
 
 
+class SessionState(enum.Enum):
+    pending = 1
+    running = 2
+    finished = 3
+
+
 class Session(db.Model):
     __tablename__ = 'sessions'
     id = db.Column(db.Integer, primary_key=True)
     quiz = db.Column(db.ForeignKey('quizzes.id'), nullable=False)
     team_sessions = db.relationship('TeamSession')
+    state = db.Column(db.Enum(SessionState), nullable=False)
 
 
 class TeamSession(db.Model):
