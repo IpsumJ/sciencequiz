@@ -106,15 +106,18 @@ class User(db.Model):
 class Session(db.Model):
     __tablename__ = 'sessions'
     id = db.Column(db.Integer, primary_key=True)
-    quiz = db.Column(db.ForeignKey('quizzes.id'), nullable=False)
+    quiz_id = db.Column(db.ForeignKey('quizzes.id'), nullable=False)
+    quiz = db.relationship("Quiz")
     team_sessions = db.relationship('TeamSession')
 
 
 class TeamSession(db.Model):
     __tablename__ = 'team_sessions'
     id = db.Column(db.Integer, primary_key=True)
-    team = db.Column(db.ForeignKey('teams.id'), nullable=False)
-    session = db.Column(db.ForeignKey('sessions.id'), nullable=False)
+    team_id = db.Column(db.ForeignKey('teams.id'), nullable=False)
+    team = db.relationship("Team")
+    session_id = db.Column(db.ForeignKey('sessions.id'), nullable=False)
+    session = db.relationship("Session")
 
 
 class TeamAnswer(db.Model):

@@ -1,0 +1,31 @@
+{% extends "manage/manage_nav.html" %}
+{% set active = 'sessions' %}
+{% block title %}
+    Neue Session erzeugen
+{% endblock %}
+{% block body %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Session</h3>
+        </div>
+
+        <div class="panel-body">
+            <form method="post">
+                <table class="form-table">
+                    <tr>
+                        <th><label>Quiz</label></th>
+                        <td colspan="2">
+                            <select class="selectpicker" data-live-search="true">
+                                {% for q in quizzes %}
+                                    <option>{{ q.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+
+
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </div>
+{% endblock %}

@@ -82,6 +82,17 @@ def manage_teams_new():
     return render_template('manage/teams_new.html', categories=cat)
 
 
+@app.route('/manage/sessions')
+def manage_sessions():
+    return render_template('manage/sessions.html', teams=Session.query.all())
+
+@app.route('/manage/sessions/new')
+def manage_sessions_new():
+    if request.method == 'POST':
+        return redirect('/manage/sessions')
+    return render_template('manage/sessions_new.html', quizzes=Quiz.query.all(), teams=Team.query.all())
+
+
 @app.route('/manage/categories', methods=['GET', 'POST'])
 def manage_categories():
     if request.method == 'POST':

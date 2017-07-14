@@ -1,0 +1,21 @@
+{% extends "manage/manage_nav.html" %}
+{% set active = 'sessions' %}
+{% block title %}
+   Sessions 
+{% endblock %}
+{% block body %}
+    <div class="pd"><a href="/manage/sessions/new" class="btn btn-success pull-right">Neue Session anlegen</a><span
+            class="clearfix"></span></div>
+    {% for s in sessions %}
+        <div class="panel panel-default">
+            <div class="panel-heading">{{ s.quiz.name }} in {{ s.room.name }}</div>
+            <table class="table">
+                {% for t in s.teams %}
+                    <tr>
+                        <td>{{ t.name }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    {% endfor %}
+{% endblock %}
