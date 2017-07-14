@@ -4,25 +4,25 @@
     <div class="answerbox">
         <div id="a" class="answer">
             <div class="ansletter">A</div>
-            <div class="text">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor
+            <div class="anstext">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor
                 invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo
                 dolores et ea rebum. Stet clita kasd gubergren,
             </div>
         </div>
         <div id="b" class="answer">
             <div class="ansletter">B</div>
-            <div class="text">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam</div>
+            <div class="anstext">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam</div>
         </div>
         <div id="c" class="answer">
             <div class="ansletter">C</div>
-            <div class="text">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor
+            <div class="anstext">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor
                 invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo
                 dolores et ea rebum. Stet clita kasd gubergren,
             </div>
         </div>
         <div id="d" class="answer">
             <div class="ansletter">D</div>
-            <div class="text">Lorem ipsum</div>
+            <div class="anstext">Lorem ipsum</div>
         </div>
     </div>
     <script type="text/javascript" src="/static/js/jquery.min.js"></script>
@@ -67,10 +67,10 @@
                     $('#full').addClass('hidden');
                 }
                 $('#question').html(msg.question);
-                $('#a .text').html(msg.a);
-                $('#b .text').html(msg.b);
-                $('#c .text').html(msg.c);
-                $('#d .text').html(msg.d);
+                $('#a .anstext').html(msg.a);
+                $('#b .anstext').html(msg.b);
+                $('#c .anstext').html(msg.c);
+                $('#d .anstext').html(msg.d);
             });
             socket.on('sleep', function (msg) {
                 if (running) {

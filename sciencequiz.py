@@ -82,6 +82,25 @@ def manage_teams_new():
     return render_template('manage/teams_new.html', categories=cat)
 
 
+@app.route('/manage/sessions')
+def manage_sessions():
+    return render_template('manage/sessions.html', sessions=Session.query.all())
+
+@app.route('/manage/sessions/new', methods=['GET', 'POST'])
+def manage_sessions_new():
+    if request.method == 'POST':
+        s = Session(quiz_id=request.form['quiz'], state=SessionState.pending)
+        db.session.add(s)
+        for i in range(4):
+            team_id = request.form['team' + str(i)]
+            if team_id:
+                ts = TeamSession(session=s, team_id=team_id)
+                db.session.add(ts)
+        db.session.commit()
+        return redirect('/manage/sessions')
+    return render_template('manage/sessions_new.html', quizzes=Quiz.query.all(), teams=Team.query.all())
+
+
 @app.route('/manage/categories', methods=['GET', 'POST'])
 def manage_categories():
     if request.method == 'POST':

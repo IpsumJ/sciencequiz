@@ -1,0 +1,49 @@
+{% extends "manage/manage_nav.html" %}
+{% set active = 'sessions' %}
+{% block title %}
+    Neue Session erzeugen
+{% endblock %}
+{% block body %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Session</h3>
+        </div>
+
+        <div class="panel-body">
+            <form method="post">
+                <table class="form-table">
+                    <tr>
+                        <th><label>Quiz</label></th>
+                        <td colspan="2">
+                            <select name="quiz" class="selectpicker" data-live-search="true">
+                                {% for q in quizzes %}
+                                <option value="{{ q.id }}">{{ q.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+                    {% for i in range(4) %}
+                    <tr>
+                        <th><label>Team {{ i+1 }}</label></th>
+                        <td colspan="2">
+                            <select name="team{{ i }}" class="selectpicker" data-live-search="true">
+                                <option></option>
+                                {% for t in teams %}
+                                <option value="{{ t.id }}">{{ t.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    <tr>
+                        <td>
+                        </td>
+                        <td colspan="2">
+                            <button type="submit" class="btn btn-success pull-right">Anlegen</button>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </div>
+{% endblock %}
