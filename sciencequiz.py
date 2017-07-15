@@ -41,7 +41,8 @@ def inject_year():
 
 @app.context_processor
 def inject_questiontypes():
-    return dict(isinstance=isinstance, QuestionChoose=QuestionChoose, QuestionEstimate=QuestionEstimate)
+    return dict(isinstance=isinstance, QuestionChoose=QuestionChoose,
+            QuestionEstimate=QuestionEstimate, QuestionType=QuestionType)
 
 
 @app.route('/')
@@ -152,23 +153,32 @@ def delete_category(category):
 # TODO: guess question
 @app.route('/manage/questions/new', methods=['GET', 'POST'])
 def manage_questions_new():
-    if request.method == 'POST' and request.form['ansA'].strip() and request.form['ansB'].strip() and \
-            request.form['ansC'].strip() and request.form['ansD'].strip():
-        print(request.form['category'])
-        question = QuestionChoose(question=request.form['question'], category=request.form['category'])
-        correct = ord(request.form['correct'].upper())
-        correct_answer = None
-        # db.mapper(Question, db.metadata.tables['questions'], non_primary=True, properties={'correct_answer': db.relationship(Answer)})
-        for i in range(ord('A'), ord('E')):
-            a = AnswerChoose(question=question, answer=request.form['ans' + chr(i)])
-            question.answers.append(a)
-            if i == correct:
-                correct_answer = a
-        db.session.add(question)
-        db.session.commit()
-        print(correct_answer.id)
-        question.correct_answer = correct_answer.id
-        db.session.commit()
+    if request.method == 'POST':
+        if QuestionType[request.form['type']] == QuestionType.choose:
+            if not(request.form['ansA'].strip() and request.form['ansB'].strip() and
+                    request.form['ansC'].strip() and request.form['ansD'].strip()):
+                abort(400, "Some anwers are empty")
+            question = QuestionChoose(question=request.form['question'], category=request.form['category'])
+            correct = ord(request.form['correct'].upper())
+            correct_answer = None
+            # db.mapper(Question, db.metadata.tables['questions'], non_primary=True, properties={'correct_answer': db.relationship(Answer)})
+            for i in range(ord('A'), ord('E')):
+                a = AnswerChoose(question=question, answer=request.form['ans' + chr(i)])
+                question.answers.append(a)
+                if i == correct:
+                    correct_answer = a
+            db.session.add(question)
+            db.session.commit()
+            question.correct_answer = correct_answer.id
+            db.session.commit()
+        elif QuestionType[request.form['type']] == QuestionType.estimate:
+            question = QuestionEstimate(question=request.form['question'],
+                    category=request.form['category'],
+                    correct_value=float(request.form['correct_value']))
+            db.session.add(question)
+            db.session.commit()
+        else:
+            abort(400, "Unknown question type")
         return redirect('/manage/questions/new')
 
     categories = Category.query.all()
@@ -184,17 +194,25 @@ def edit_question(question):
             Question.query.filter_by(id=question).delete()
             db.session.commit()
             return redirect('/manage/questions')
-        quest_obj = QuestionChoose.query.get(question)
-        correct = request.form['correct']
-        quest_obj.question = request.form['question']
-        quest_obj.category = request.form['category'],
-        quest_obj.correct_answer = quest_obj.answers[ord(correct) - 97].id
+        quest_obj = Question.query.get(question)
+        if isinstance(quest_obj, QuestionChoose):
+            correct = request.form['correct']
+            quest_obj.question = request.form['question']
+            quest_obj.category = request.form['category'],
+            quest_obj.correct_answer = quest_obj.answers[ord(correct) - 97].id
 
-        AnswerChoose.query.get(request.form['aid']).answer = request.form['ansA'].strip()
-        AnswerChoose.query.get(request.form['bid']).answer = request.form['ansB'].strip()
-        AnswerChoose.query.get(request.form['cid']).answer = request.form['ansC'].strip()
-        AnswerChoose.query.get(request.form['did']).answer = request.form['ansD'].strip()
-        db.session.commit()
+            AnswerChoose.query.get(request.form['aid']).answer = request.form['ansA'].strip()
+            AnswerChoose.query.get(request.form['bid']).answer = request.form['ansB'].strip()
+            AnswerChoose.query.get(request.form['cid']).answer = request.form['ansC'].strip()
+            AnswerChoose.query.get(request.form['did']).answer = request.form['ansD'].strip()
+            db.session.commit()
+        elif isinstance(quest_obj, QuestionEstimate):
+            quest_obj.question = request.form['question']
+            quest_obj.category = request.form['category'],
+            quest_obj.correct_value = float(request.form['correct_value'])
+            db.session.commit()
+        else:
+            abort(400, "Unknown question type")
         return redirect('/manage/questions')
     q = Question.query.get(question)
     cat = Category.query.all()

@@ -13,6 +13,7 @@
                 {% for q in c.questions %}
                     <tr>
                         <td>{{ q.question }}
+                                <span class="label label-success">{{ q.type.name }}</span>
                             {% for quiz in q.quizzes %}
                                 <span class="label {% if quiz.public %}label-danger{% else %}label-default{% endif %}"><a
                                         href="/manage/arrange/{{ quiz.id }}">{{ quiz.name }}</a></span>{% endfor %}</td>

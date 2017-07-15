@@ -26,6 +26,12 @@
                             {% endfor %}
                         </select></td>
                     </tr>
+                    {% if not q or isinstance(q, QuestionChoose) %}
+                    <tr>
+                        <th><label>Multiple-Choice Frage</label></th>
+                        <td><input type="radio" {% if not q or isinstance(q, QuestionChoose) %}checked{% endif %} name="type"
+                                value="{{ QuestionType.choose.name }}"/></td>
+                    </tr>
                     <tr>
                         <th><label>A</label></th>
                         {% if q %}<input type="hidden" name="aid" value="{{ q.answers[0].id }}"/>{% endif %}
@@ -54,6 +60,18 @@
                         <td><input type="radio" {% if q and q.correct_answer == q.answers[3].id %}checked{% endif %} name="correct"
                                    value="d"/></td>
                     </tr>
+                    {% endif %}
+                    {% if not q or isinstance(q, QuestionEstimate) %}
+                    <tr>
+                        <th><label>Sch&auml;tzfrage</label></th>
+                        <td><input type="radio" {% if q and isinstance(q, QuestionEstimate) %}checked{% endif %} name="type"
+                                value="{{ QuestionType.estimate.name }}"/></td>
+                    </tr>
+                    <tr>
+                        <th><label>Korrekter Wert</label></th>
+                        <td><input type="text" class="form-control" name="correct_value" value="{% if q and isinstance(q, QuestionEstimate) %}{{ q.correct_value }}{% endif %}"\></td>
+                    </tr>
+                    {% endif %}
                     <tr>
                         <td>
                         </td>
