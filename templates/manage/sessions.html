@@ -8,7 +8,15 @@
             class="clearfix"></span></div>
     {% for s in sessions %}
         <div class="panel panel-default">
-            <div class="panel-heading">{{ s.quiz.name }} in {{ s.device_token.name }}</div>
+            <div class="panel-heading">{{ s.quiz.name }} in {{ s.device_token.name }}
+                {% if s.state|string == 'SessionState.pending' %}
+                    <span class="label label-default">Ausstehend</span>
+                {% elif s.state|string == 'SessionState.running' %}
+                    <span class="label label-primary">In Ausführung</span>
+                {% elif s.state|string == 'SessionState.finished' %}
+                    <span class="label label-success">Abgeschlossen</span>
+                {% endif %}
+            </div>
             <table class="table">
                 {% for ts in s.team_sessions %}
                     <tr>
