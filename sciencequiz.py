@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, g
+from flask import Flask, render_template, request, redirect, abort
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_sqlalchemy import SQLAlchemy
 from beaker.middleware import SessionMiddleware
@@ -6,8 +6,6 @@ import datetime
 import uuid
 
 # TODO!!!: Error handling
-
-active_displays = {}
 
 session_opts = {
     'session.type': 'file',
@@ -82,8 +80,31 @@ def manage_teams_new():
     return render_template('manage/teams_new.html', categories=cat)
 
 
-@app.route('/manage/sessions')
+@app.route('/manage/sessions', methods=['GET', 'POST'])
 def manage_sessions():
+    if 'action' in request.form:
+        action = request.form['action']
+        session = Session.query.get(request.form['session'])
+        if action == 'cancel':
+            if session.state == SessionState.finished:
+                abort(400, "Session already finished.")
+            session.state = SessionState.pending
+            emit('meta_data', {'display_name': session.device_token.name, 'team_names': []},
+                 room=session.device_token.token, namespace='/quiz')
+            emit('sleep', {},
+                 room=session.device_token.token, namespace='/quiz')
+            db.session.commit()
+        if action == 'run':
+            if session.state == SessionState.finished:
+                abort(400, "Session already finished.")
+            if Session.query.filter_by(state=SessionState.running, device_token_id=session.device_token_id).count() > 0:
+                abort(400, "A session is already running in this room.")
+            session.state = SessionState.running
+            emit('meta_data', {'display_name': session.device_token.name,
+                               'team_names': [t.team.name for t in session.team_sessions]},
+                 room=session.device_token.token, namespace='/quiz')
+            db.session.commit()
+        redirect('/manage/sessions')
     return render_template('manage/sessions.html', sessions=Session.query.all())
 
 
@@ -178,24 +199,33 @@ def edit_question(question):
                            categories=cat)
 
 
-@app.route('/manage/run/<token>/<q>')
-def run_display(token, q):
+@app.route('/run/<token>')
+def run_r_display(token):
     res = DeviceToken.query.filter_by(token=token)
-    if res is not None:
+    if res.count() > 0:
         s = request.environ['beaker.session']
-        s['device_token'] = res[0]
+        s['display'] = Display(token=token)
         s.save()
-        active_displays[token].active_quiz = Quiz.query.get(q)
-        active_displays[token].quiz_index = 0
-        print(active_displays[token].active_quiz)
-        active_displays[token].ready = False
-        return redirect('/quiz_manager')
-    db.session.commit()
+        return redirect('/quiz')
+    else:
+        abort(403)
 
 
-@app.route('/manage/displays')
+@app.route('/run_adm/<token>')
+def run_rw_display(token):
+    res = DeviceToken.query.filter_by(token=token)
+    if res.count() > 0:
+        s = request.environ['beaker.session']
+        s['display'] = Display(w=True, token=token)
+        s.save()
+        return redirect('/quiz')
+    else:
+        abort(403)
+
+
+@app.route('/manage/active_sessions')
 def manage_displays():
-    return render_template('/manage/displays.html', displays=active_displays)
+    return render_template('/manage/active_sessions.html', sessions=Session.query.filter_by(state=SessionState.running))
 
 
 @app.route('/manage/arrange/<quiz>', methods=['GET', 'POST'])
@@ -247,8 +277,7 @@ def manage_arrange():
     q = Quiz.query.all()
     db.session.commit()
     return render_template('manage/arrange.html',
-                           quizzes=q,
-                           displays=[d for d in active_displays.values() if d.ready])
+                           quizzes=q)
 
 
 @app.route('/manage/arrange/new', methods=['GET', 'POST'])
@@ -266,16 +295,12 @@ def manage_arrange_new():
 # USER PAGES
 @app.route('/quiz', methods=['GET', 'POST'])
 def quiz():
-    if 'device_token' in request.environ['beaker.session']:
-        return render_template('try.html')
-    return redirect('/display')
-
-
-@app.route('/quiz_manager', methods=['GET', 'POST'])
-def quiz_manage():
-    if 'device_token' in request.environ['beaker.session']:
-        return render_template('manage_display.html')
-    return redirect('/display')
+    if 'display' in request.environ['beaker.session']:
+        if request.environ['beaker.session']['display'].w:
+            return render_template('manage_display.html')
+        if request.environ['beaker.session']['display'].r:
+            return render_template('display.html')
+    abort(403)
 
 
 @app.route('/clear_session')
@@ -306,37 +331,39 @@ def emit_question(question, dev):
                       'd': question.answers[3].answer}, room=dev.token)
 
 
+def get_current_session_by_token(token):
+    res = Session.query.filter_by(state=SessionState.running, device_token_id=token.id)
+    if res.count() == 0:
+        return None
+    return res.first()
+
+
 @socketio.on('connect', namespace='/quiz')
 def quiz_connect():
     # emit('question', {'question': 'Connected', 'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd'})
     s = request.environ['beaker.session']
-    if 'device_token' in s:
-        print("Device token detected!")
-        join_room(s['device_token'].token)
-        dev = s['device_token']
-        emit('meta_data', {'display_name': dev.name}, room=dev.token)
-        if dev.token in active_displays and not active_displays[dev.token].ready:
-            disp = active_displays[dev.token]
-            current_quest = disp.active_quiz.questions[disp.quiz_index]
-            emit_question(current_quest, dev)
+    if 'display' in s:
+        display = s['display']
+        token = DeviceToken.query.filter_by(token=display.token).first()
+        join_room(token.token)
+        session = get_current_session_by_token(token)
+        emit('meta_data', {'display_name': token.name, 'team_names': []}, room=token.token)
+        if session is None:
+            emit('sleep', room=token.token)
         else:
-            active_displays[dev.token] = Display(dev)
-        print(s['device_token'].name, 'was added as active screen.')
-    print("Connected")
+            emit('meta_data', {'display_name': token.name, 'team_names': [t.team.name for t in session.team_sessions]})
 
 
 @socketio.on('disconnect', namespace='/quiz')
 def quiz_disconnect():
-    s = request.environ['beaker.session']['device_token']
-    leave_room(s.token)
-    # del (active_displays[s.token])
-    print('disconnect', s.name)
-    pass
+    s = request.environ['beaker.session']['display']
+    print('disconnect', s.token)
 
 
+# TODO!
 @socketio.on('answer_selected_result', namespace='/quiz')
 def answer_selected(message):
-    disp = active_displays[request.environ['beaker.session']['device_token'].token]
+    disp = request.environ['beaker.session']['display']
     if not disp.w:
         return
     ans = message['sel']
@@ -353,9 +380,10 @@ def answer_selected(message):
     emit('answer_response', {'correct': chr(97 + correct_index)}, room=disp.token.token)
 
 
+# TODO!
 @socketio.on('answer_selected', namespace='/quiz')
 def answer_selected(message):
-    disp = active_displays[request.environ['beaker.session']['device_token'].token]
+    disp = request.environ['beaker.session']['display']
     if not disp.w:
         return
     ans = message['sel']
@@ -364,7 +392,7 @@ def answer_selected(message):
 
 @socketio.on('pause_quiz', namespace='/quiz')
 def pause_quiz(message):
-    disp = active_displays[request.environ['beaker.session']['device_token'].token]
+    disp = request.environ['beaker.session']['display']
     if not disp.w:
         return
     emit('sleep', {}, room=disp.token.token)
@@ -372,7 +400,7 @@ def pause_quiz(message):
 
 @socketio.on('resume_quiz', namespace='/quiz')
 def resmue_quiz(message):
-    disp = active_displays[request.environ['beaker.session']['device_token'].token]
+    disp = request.environ['beaker.session']['display']
     if not disp.w:
         return
     emit('wakeup', {}, room=disp.token.token)
@@ -380,28 +408,24 @@ def resmue_quiz(message):
 
 @socketio.on('next_question', namespace='/quiz')
 def next_q(message):
-    dev = request.environ['beaker.session']['device_token']
-    disp = active_displays[dev.token]
-    disp.quiz_index += 1
-    emit_question(disp.active_quiz.questions[disp.quiz_index], dev)
+    disp = request.environ['beaker.session']['display']
+    # disp.quiz_index += 1
+    emit_question(disp.active_quiz.questions[disp.quiz_index], disp)
 
 
+# TODO!
 @socketio.on('prev_question', namespace='/quiz')
 def prev_q(message):
-    dev = request.environ['beaker.session']['device_token']
-    disp = active_displays[dev.token]
-    disp.quiz_index -= 1
-    emit_question(disp.active_quiz.questions[disp.quiz_index], dev)
+    disp = request.environ['beaker.session']['display']
+    # disp.quiz_index -= 1
+    emit_question(disp.active_quiz.questions[disp.quiz_index], disp)
 
 
 @socketio.on('cancel_quiz', namespace='/quiz')
 def cancel_quiz(message):
-    dev = request.environ['beaker.session']['device_token']
-    disp = active_displays[dev.token]
-    disp.ready = True
-    disp.active_quiz = None
+    disp = request.environ['beaker.session']['display']
     print('Sleep quiz')
-    emit('sleep', {}, room=disp.token.token)
+    emit('sleep', {}, room=disp.token)
 
 
 if __name__ == '__main__':

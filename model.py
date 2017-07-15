@@ -154,10 +154,7 @@ class TeamAnswerEstimate(TeamAnswer):
 
 
 class Display(object):
-    def __init__(self, token):
+    def __init__(self, token, r=True, w=False):
+        self.r = r
+        self.w = w
         self.token = token
-        self.ready = True
-        self.r = True
-        self.w = True
-        self.current_quiz = None
-        self.quiz_index = 0
