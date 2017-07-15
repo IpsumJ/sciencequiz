@@ -39,6 +39,10 @@ def inject_user():
 def inject_year():
     return dict(year=datetime.datetime.now().year)
 
+@app.context_processor
+def inject_questiontypes():
+    return dict(isinstance=isinstance, QuestionChoose=QuestionChoose, QuestionEstimate=QuestionEstimate)
+
 
 @app.route('/')
 def science_quiz():
