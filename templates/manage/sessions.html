@@ -8,7 +8,7 @@
             class="clearfix"></span></div>
     {% for s in sessions %}
         <div class="panel panel-default">
-            <div class="panel-heading">{{ s.quiz.name }} in TODO</div>
+            <div class="panel-heading">{{ s.quiz.name }} in {{ s.device_token.name }}</div>
             <table class="table">
                 {% for ts in s.team_sessions %}
                     <tr>

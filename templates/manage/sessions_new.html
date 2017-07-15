@@ -22,6 +22,16 @@
                             </select>
                         </td>
                     </tr>
+                    <tr>
+                        <th><label>Raum</label></th>
+                        <td colspan="2">
+                            <select name="device_token" class="selectpicker" data-live-search="true">
+                                {% for t in device_tokens %}
+                                <option value="{{ t.id }}">{{ t.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
                     {% for i in range(4) %}
                     <tr>
                         <th><label>Team {{ i+1 }}</label></th>

@@ -89,7 +89,8 @@ def manage_sessions():
 @app.route('/manage/sessions/new', methods=['GET', 'POST'])
 def manage_sessions_new():
     if request.method == 'POST':
-        s = Session(quiz_id=request.form['quiz'], state=SessionState.pending)
+        s = Session(quiz_id=request.form['quiz'], state=SessionState.pending,
+                    device_token_id=request.form['device_token'])
         db.session.add(s)
         for i in range(4):
             team_id = request.form['team' + str(i)]
@@ -98,7 +99,8 @@ def manage_sessions_new():
                 db.session.add(ts)
         db.session.commit()
         return redirect('/manage/sessions')
-    return render_template('manage/sessions_new.html', quizzes=Quiz.query.all(), teams=Team.query.all())
+    return render_template('manage/sessions_new.html', quizzes=Quiz.query.all(), teams=Team.query.all(),
+                           device_tokens=DeviceToken.query.all())
 
 
 @app.route('/manage/categories', methods=['GET', 'POST'])

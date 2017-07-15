@@ -115,6 +115,8 @@ class Session(db.Model):
     quiz_id = db.Column(db.ForeignKey('quizzes.id'), nullable=False)
     quiz = db.relationship("Quiz")
     team_sessions = db.relationship('TeamSession')
+    device_token_id = db.Column(db.ForeignKey('device_tokens.id'))
+    device_token = db.relationship("DeviceToken")
     state = db.Column(db.Enum(SessionState), nullable=False)
 
 
