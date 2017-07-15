@@ -86,6 +86,7 @@ def manage_teams_new():
 def manage_sessions():
     return render_template('manage/sessions.html', sessions=Session.query.all())
 
+
 @app.route('/manage/sessions/new', methods=['GET', 'POST'])
 def manage_sessions_new():
     if request.method == 'POST':
@@ -219,22 +220,22 @@ def manage_arrange_question(quiz):
     return redirect('/manage/questions')
 
 
-@app.route('/manage/clients', methods=['GET', 'POST'])
+@app.route('/manage/rooms', methods=['GET', 'POST'])
 def manage_arrange_device_tokens():
     if request.method == 'POST':
         db.session.add(DeviceToken(name=request.form['newtoken'], token=str(uuid.uuid4())))
         db.session.commit()
-        return redirect('/manage/clients')
+        return redirect('/manage/rooms')
     devs = DeviceToken.query.all()
     return render_template('/manage/device_tokens.html', devices=devs)
 
 
-@app.route('/manage/client/<device>', methods=['POST'])
+@app.route('/manage/rooms/<device>', methods=['POST'])
 def manage_edit_device_token(device):
     if 'delete' in request.form:
         DeviceToken.query.filter_by(id=device).delete()
         db.session.commit()
-    return redirect('/manage/clients')
+    return redirect('/manage/rooms')
 
 
 @app.route('/manage/arrange', methods=['GET', 'POST'])

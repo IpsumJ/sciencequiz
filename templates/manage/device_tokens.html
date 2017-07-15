@@ -1,12 +1,12 @@
 {% extends "manage/manage_nav.html" %}
 {% set active = 'device_tokens' %}
 {% block title %}
-    Clients
+    Räume
 {% endblock %}
 {% block body %}
     <table class="table table-striped">
         <tr>
-            <th colspan="3">Neuer Client</th>
+            <th colspan="3">Neuer Raum</th>
         </tr>
         <form method="post">
             <tr>
@@ -30,7 +30,7 @@
                     <pre>{{ dev.token }}</pre>
                 </td>
                 <td>
-                    <form method="post" action="/manage/client/{{ dev.id }}">
+                    <form method="post" action="/manage/room/{{ dev.id }}">
                         <button type="submit" name="delete" class="btn btn-danger pull-right"><span
                                 class="glyphicon glyphicon-trash" aria-hidden="true"></span></button>
                     </form>
