@@ -368,7 +368,7 @@ def display():
 
 def timer_task():
     while True:
-        sessions = Session.query.options(db.joinedload(Session.device_token)).filter(Session.on_display()).all()
+        sessions = Session.query.options(db.joinedload(Session.device_token)).filter(Session.state == SessionState.running).all()
         for session in sessions:
             try:
                 if session.device_token is not None:
@@ -380,6 +380,8 @@ def timer_task():
                     time_total = datetime.timedelta(minutes=15)
                     socketio.emit('timer', {'time_running': time_running.total_seconds(), 'time_total': time_total.total_seconds()}, room=session.device_token.token, namespace="/quiz")
                     if time_running > time_total:
+                        session.offset += datetime.datetime.now() - session.start_time        
+                        session.start_time = None
                         session.state = SessionState.finished
                         db.session.commit()
                         socketio.emit('finished', {}, room=session.device_token.token, namespace="/quiz")
