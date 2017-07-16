@@ -288,6 +288,8 @@ def manage_arrange_question_delete(quiz):
 @app.route('/manage/rooms', methods=['GET', 'POST'])
 def manage_arrange_device_tokens():
     if request.method == 'POST':
+        if not request.form['newtoken']:
+            abort(400, "Name must not be empty")
         db.session.add(DeviceToken(name=request.form['newtoken'], token=str(uuid.uuid4())))
         db.session.commit()
         return redirect('/manage/rooms')
