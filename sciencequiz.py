@@ -124,11 +124,16 @@ def manage_sessions_new():
         s = Session(quiz_id=request.form['quiz'], state=SessionState.pending,
                     device_token_id=request.form['device_token'])
         db.session.add(s)
+        num_teams = 0
         for i in range(4):
             team_id = request.form['team' + str(i)]
             if team_id:
+                num_teams += 1
                 ts = TeamSession(session=s, team_id=team_id)
                 db.session.add(ts)
+        if num_teams == 0:
+            db.session.rollback()
+            abort(400, "Session must have at least one team")
         db.session.commit()
         return redirect('/manage/sessions')
     return render_template('manage/sessions_new.html', quizzes=Quiz.query.all(), teams=Team.query.all(),
