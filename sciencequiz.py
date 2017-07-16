@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from beaker.middleware import SessionMiddleware
 import datetime
 import uuid
+import time
 
 # TODO!!!: Error handling
 
@@ -16,6 +17,8 @@ session_opts = {
 app = Flask(__name__)
 socketio = SocketIO(app)
 app.config.from_pyfile('config.py')
+
+timer_thread = None
 
 db = SQLAlchemy(app)
 from model import *
@@ -356,6 +359,26 @@ def display():
 
 # SOCKET.IO STUFF
 
+def timer_task():
+    while True:
+        sessions = Session.query.options(db.joinedload(Session.device_token)).filter_by(state=SessionState.running).all()
+        for session in sessions:
+            try:
+                if session.device_token is not None:
+                    time_running = None
+                    if session.start_time is None:
+                        time_running = session.offset 
+                    else:
+                        time_running = datetime.datetime.now() - session.start_time + session.offset
+                    time_total = datetime.timedelta(minutes=15)
+                    socketio.emit('timer', {'time_running': time_running.total_seconds(), 'time_total': time_total.total_seconds()}, room=session.device_token.token, namespace="/quiz")
+            except Exception as e:
+                print("Exception occurred in timer, please dont die...")
+                print(e)
+        db.session.rollback()  # Needed to include newer commits in result
+
+        time.sleep(0.5)
+
 def emit_question(question, dev):
     print("emit", question.question)
     emit('question', {'question': question.question, 'a': question.answers[0].answer,
@@ -372,6 +395,9 @@ def get_current_session_by_token(token):
 
 @socketio.on('connect', namespace='/quiz')
 def quiz_connect():
+    global timer_thread
+    if timer_thread is None:
+        timer_thread = socketio.start_background_task(target=timer_task)
     # emit('question', {'question': 'Connected', 'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd'})
     s = request.environ['beaker.session']
     if 'display' in s:
@@ -387,6 +413,10 @@ def quiz_connect():
                 print('emit current')
                 emit_question(session.current_question, disp)
             emit('meta_data', {'display_name': token.name, 'team_names': [t.team.name for t in session.team_sessions]})
+            if session.start_time is None:
+                emit("sleep", {}, room=token.token)
+            else:
+                emit("wakeup", {}, room=token.token)
 
 
 @socketio.on('disconnect', namespace='/quiz')
@@ -444,6 +474,12 @@ def pause_quiz(message):
     disp = request.environ['beaker.session']['display']
     if not disp.w:
         return
+    token = DeviceToken.query.filter_by(token=disp.token).first()
+    session = get_current_session_by_token(token)
+    if session.start_time is not None:
+        session.offset += datetime.datetime.now() - session.start_time        
+        session.start_time = None
+        db.session.commit()
     emit('sleep', {}, room=disp.token)
 
 
@@ -452,6 +488,11 @@ def resmue_quiz(message):
     disp = request.environ['beaker.session']['display']
     if not disp.w:
         return
+    token = DeviceToken.query.filter_by(token=disp.token).first()
+    session = get_current_session_by_token(token)
+    if session.start_time is None:
+        session.start_time = datetime.datetime.now()
+        db.session.commit()
     emit('wakeup', {}, room=disp.token)
 
 

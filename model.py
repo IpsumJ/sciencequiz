@@ -1,5 +1,6 @@
 from sciencequiz import db
 import enum
+import datetime
 
 association_quiz_questions = db.Table('quiz_questions', db.Model.metadata,
                                       db.Column('quiz', db.Integer, db.ForeignKey('quizzes.id')),
@@ -120,6 +121,8 @@ class Session(db.Model):
     state = db.Column(db.Enum(SessionState), nullable=False)
     current_question_id = db.Column(db.ForeignKey('questions.id'), nullable=True)
     current_question = db.relationship('Question')
+    start_time = db.Column(db.DateTime, nullable=True)  # Quiz is paused if start_time is NULL
+    offset = db.Column(db.Interval, nullable=False, default=datetime.timedelta())
 
 
 class TeamSession(db.Model):
