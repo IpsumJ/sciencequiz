@@ -107,7 +107,7 @@ def manage_sessions():
         if action == 'run':
             if session.state == SessionState.finished:
                 abort(400, "Session already finished.")
-            if Session.query.filter_by(state=SessionState.running, device_token_id=session.device_token_id).count() > 0:
+            if Session.query.filter(Session.on_display(), Session.device_token_id==session.device_token_id).count() > 0:
                 abort(400, "A session is already running in this room.")
             session.state = SessionState.running
             emit('meta_data', {'display_name': session.device_token.name,
@@ -252,7 +252,7 @@ def run_rw_display(token):
 
 @app.route('/manage/active_sessions')
 def manage_displays():
-    return render_template('/manage/active_sessions.html', sessions=Session.query.filter_by(state=SessionState.running))
+    return render_template('/manage/active_sessions.html', sessions=Session.query.filter(Session.on_display()))
 
 
 @app.route('/manage/arrange/<quiz>', methods=['GET', 'POST'])
@@ -361,7 +361,7 @@ def display():
 
 def timer_task():
     while True:
-        sessions = Session.query.options(db.joinedload(Session.device_token)).filter_by(state=SessionState.running).all()
+        sessions = Session.query.options(db.joinedload(Session.device_token)).filter(Session.on_display()).all()
         for session in sessions:
             try:
                 if session.device_token is not None:
@@ -372,6 +372,10 @@ def timer_task():
                         time_running = datetime.datetime.now() - session.start_time + session.offset
                     time_total = datetime.timedelta(minutes=15)
                     socketio.emit('timer', {'time_running': time_running.total_seconds(), 'time_total': time_total.total_seconds()}, room=session.device_token.token, namespace="/quiz")
+                    if time_running > time_total:
+                        session.state = SessionState.finished
+                        db.session.commit()
+                        socketio.emit('finished', {}, room=session.device_token.token, namespace="/quiz")
             except Exception as e:
                 print("Exception occurred in timer, please dont die...")
                 print(e)
@@ -387,7 +391,7 @@ def emit_question(question, dev):
 
 
 def get_current_session_by_token(token):
-    res = Session.query.filter_by(state=SessionState.running, device_token_id=token.id)
+    res = Session.query.filter(Session.on_display(), Session.device_token_id == token.id)
     if res.count() == 0:
         return None
     return res.first()
@@ -413,10 +417,15 @@ def quiz_connect():
                 print('emit current')
                 emit_question(session.current_question, disp)
             emit('meta_data', {'display_name': token.name, 'team_names': [t.team.name for t in session.team_sessions]})
-            if session.start_time is None:
-                emit("sleep", {}, room=token.token)
+            if session.state == SessionState.running:
+                if session.start_time is None:
+                    emit("sleep", {}, room=token.token)
+                else:
+                    emit("wakeup", {}, room=token.token)
+            elif session.state == SessionState.finished:
+                emit("finished", {}, room=token.token)
             else:
-                emit("wakeup", {}, room=token.token)
+                print("Unknown state in connect")
 
 
 @socketio.on('disconnect', namespace='/quiz')
