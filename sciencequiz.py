@@ -39,10 +39,11 @@ def inject_user():
 def inject_year():
     return dict(year=datetime.datetime.now().year)
 
+
 @app.context_processor
 def inject_questiontypes():
     return dict(isinstance=isinstance, QuestionChoose=QuestionChoose,
-            QuestionEstimate=QuestionEstimate, QuestionType=QuestionType)
+                QuestionEstimate=QuestionEstimate, QuestionType=QuestionType)
 
 
 @app.route('/')
@@ -93,6 +94,7 @@ def manage_sessions():
         if action == 'cancel':
             if session.state == SessionState.finished:
                 abort(400, "Session already finished.")
+            session.current_question = None
             session.state = SessionState.pending
             emit('meta_data', {'display_name': session.device_token.name, 'team_names': []},
                  room=session.device_token.token, namespace='/quiz')
@@ -155,8 +157,8 @@ def delete_category(category):
 def manage_questions_new():
     if request.method == 'POST':
         if QuestionType[request.form['type']] == QuestionType.choose:
-            if not(request.form['ansA'].strip() and request.form['ansB'].strip() and
-                    request.form['ansC'].strip() and request.form['ansD'].strip()):
+            if not (request.form['ansA'].strip() and request.form['ansB'].strip() and
+                        request.form['ansC'].strip() and request.form['ansD'].strip()):
                 abort(400, "Some anwers are empty")
             question = QuestionChoose(question=request.form['question'], category=request.form['category'])
             correct = ord(request.form['correct'].upper())
@@ -173,8 +175,8 @@ def manage_questions_new():
             db.session.commit()
         elif QuestionType[request.form['type']] == QuestionType.estimate:
             question = QuestionEstimate(question=request.form['question'],
-                    category=request.form['category'],
-                    correct_value=float(request.form['correct_value']))
+                                        category=request.form['category'],
+                                        correct_value=float(request.form['correct_value']))
             db.session.add(question)
             db.session.commit()
         else:
@@ -373,14 +375,17 @@ def quiz_connect():
     # emit('question', {'question': 'Connected', 'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd'})
     s = request.environ['beaker.session']
     if 'display' in s:
-        display = s['display']
-        token = DeviceToken.query.filter_by(token=display.token).first()
+        disp = s['display']
+        token = DeviceToken.query.filter_by(token=disp.token).first()
         join_room(token.token)
         session = get_current_session_by_token(token)
         emit('meta_data', {'display_name': token.name, 'team_names': []}, room=token.token)
         if session is None:
             emit('sleep', room=token.token)
         else:
+            if session.current_question is not None:
+                print('emit current')
+                emit_question(session.current_question, disp)
             emit('meta_data', {'display_name': token.name, 'team_names': [t.team.name for t in session.team_sessions]})
 
 
@@ -439,16 +444,57 @@ def resmue_quiz(message):
 @socketio.on('next_question', namespace='/quiz')
 def next_q(message):
     disp = request.environ['beaker.session']['display']
-    # disp.quiz_index += 1
-    emit_question(disp.active_quiz.questions[disp.quiz_index], disp)
+    token = DeviceToken.query.filter_by(token=disp.token).first()
+    session = get_current_session_by_token(token)
+    quiz = session.quiz
+    qs = quiz.questions
+    current = None
+    # $mal zeit reinstecken, dass in einer query zu machen und nicht.... so:
+    if session.current_question is None:
+        current = qs[0]
+    else:
+        eq = False
+        for q in qs:
+            if eq:
+                current = q
+                break
+            if q.id == session.current_question.id:
+                eq = True
+        if current is None:
+            print('TODO quiz is finished')
+            return
+    session.current_question = current
+    db.session.commit()
+    emit_question(current, disp)
 
 
 # TODO!
 @socketio.on('prev_question', namespace='/quiz')
 def prev_q(message):
     disp = request.environ['beaker.session']['display']
-    # disp.quiz_index -= 1
-    emit_question(disp.active_quiz.questions[disp.quiz_index], disp)
+    token = DeviceToken.query.filter_by(token=disp.token).first()
+    session = get_current_session_by_token(token)
+    quiz = session.quiz
+    qs = quiz.questions
+    current = None
+    # $mal zeit reinstecken, dass in einer query zu machen und nicht.... so:
+    if session.current_question is None:
+        current = qs[0]
+    else:
+        eq = False
+        prev = None
+        for q in qs:
+            if q.id == q.id == session.current_question.id:
+                eq = True
+            if eq:
+                current = prev
+                break
+            prev = q
+        if current is None:
+            current = qs[0]
+    session.current_question = current
+    db.session.commit()
+    emit_question(current, disp)
 
 
 @socketio.on('cancel_quiz', namespace='/quiz')

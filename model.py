@@ -118,6 +118,8 @@ class Session(db.Model):
     device_token_id = db.Column(db.ForeignKey('device_tokens.id'))
     device_token = db.relationship("DeviceToken")
     state = db.Column(db.Enum(SessionState), nullable=False)
+    current_question_id = db.Column(db.ForeignKey('questions.id'), nullable=True)
+    current_question = db.relationship('Question')
 
 
 class TeamSession(db.Model):
