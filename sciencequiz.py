@@ -95,8 +95,8 @@ def manage_sessions():
         action = request.form['action']
         session = Session.query.get(request.form['session'])
         if action == 'cancel':
-            if session.state == SessionState.finished:
-                abort(400, "Session already finished.")
+            if session.state != SessionState.running:
+                abort(400, "Session not running.")
             session.current_question = None
             session.state = SessionState.pending
             emit('meta_data', {'display_name': session.device_token.name, 'team_names': []},
@@ -112,6 +112,17 @@ def manage_sessions():
             session.state = SessionState.running
             emit('meta_data', {'display_name': session.device_token.name,
                                'team_names': [t.team.name for t in session.team_sessions]},
+                 room=session.device_token.token, namespace='/quiz')
+            db.session.commit()
+        if action == 'close':
+            if session.state == SessionState.closed:
+                abort(400, "Session already closed.")
+            if session.state == SessionState.pending:
+                abort(400, "Session not running or finished.")
+            session.state = SessionState.closed
+            emit('meta_data', {'display_name': session.device_token.name, 'team_names': []},
+                 room=session.device_token.token, namespace='/quiz')
+            emit('sleep', {},
                  room=session.device_token.token, namespace='/quiz')
             db.session.commit()
         redirect('/manage/sessions')

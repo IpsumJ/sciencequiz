@@ -28,6 +28,15 @@
                     </form>
                     <span class="clearfix"></span>
                 {% elif s.state|string == 'SessionState.finished' %}
+                    <span class="label label-primary">Auswertung</span>
+                    <form method="post" class="pull-right" style="display: inline">
+                        <input type="hidden" name="action" value="close">
+                        <input type="hidden" value="{{ s.id }}" name="session">
+                        <button type="submit" class="btn btn-danger">
+                            <span class="glyphicon glyphicon-ok" aria-hidden="true"></span></button>
+                    </form>
+                    <span class="clearfix"></span>
+                {% elif s.state|string == 'SessionState.closed' %}
                     <span class="label label-success">Abgeschlossen</span>
                 {% endif %}
 
