@@ -397,22 +397,23 @@ def quiz_disconnect():
 
 # TODO!
 @socketio.on('answer_selected_result', namespace='/quiz')
-def answer_selected(message):
+def answer_selected_result(message):
     disp = request.environ['beaker.session']['display']
     if not disp.w:
         return
+    token = DeviceToken.query.filter_by(token=disp.token).first()
     ans = message['sel']
-    # answer is correct, do something
-    if ans == 'c':
-        pass
     index = ord(ans) - 97
     correct_index = 0
-    quest = disp.active_quiz.questions[disp.quiz_index]
+    quest = get_current_session_by_token(token).current_question
     for a in quest.answers:
         if a.id == quest.correct_answer:
             break
         correct_index += 1
-    emit('answer_response', {'correct': chr(97 + correct_index)}, room=disp.token.token)
+    # answer is correct, do something
+    if index == correct_index:
+        pass
+    emit('answer_response', {'correct': chr(97 + correct_index)}, room=disp.token)
 
 
 # TODO!
@@ -422,7 +423,20 @@ def answer_selected(message):
     if not disp.w:
         return
     ans = message['sel']
-    emit('selection', {'selected': ans}, room=disp.token.token)
+    ans_index = ord(ans) - 97
+    token = DeviceToken.query.filter_by(token=disp.token).first()
+    session = get_current_session_by_token(token=token)
+    choose = None
+    if isinstance(session.current_question, QuestionChoose):
+        # TODO! multiteam
+        choose = TeamAnswerChoose(team_session=session.team_sessions[0].id,
+                                  answer=session.current_question.answers[ans_index].id)
+    elif isinstance(session.current_question, QuestionEstimate):
+        # TODO
+        pass
+    db.session.add(choose)
+    db.session.commit()
+    emit('selection', {'selected': ans}, room=disp.token)
 
 
 @socketio.on('pause_quiz', namespace='/quiz')
