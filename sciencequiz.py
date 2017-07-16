@@ -297,7 +297,7 @@ def manage_arrange_device_tokens():
     return render_template('/manage/device_tokens.html', devices=devs)
 
 
-@app.route('/manage/rooms/<device>', methods=['POST'])
+@app.route('/manage/room/<device>', methods=['POST'])
 def manage_edit_device_token(device):
     if 'delete' in request.form:
         DeviceToken.query.filter_by(id=device).delete()
