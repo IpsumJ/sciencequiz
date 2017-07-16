@@ -54,8 +54,13 @@
             {% endfor %}
             </ul>
           {% elif isinstance(question, QuestionEstimate) %}
-          {{ a.correct_value }}
+          {{ question.correct_value }}
           {% endif %}
+          <form class="pull-right" method="post" action="/manage/arrange/{{ q.id }}/delete">
+            <input type="hidden" name="id" value="{{ question.id }}" />
+            <button type="submit" name="delete" class="btn btn-danger"><span
+                class="glyphicon glyphicon-trash" aria-hidden="true"></span></button>
+          </form>
       </div>
     </div>
     {% endfor %}

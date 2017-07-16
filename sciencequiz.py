@@ -265,11 +265,19 @@ def manage_arrange_edit(quiz):
 
 
 @app.route('/manage/arrange/<quiz>/add', methods=['GET'])
-def manage_arrange_question(quiz):
+def manage_arrange_question_add(quiz):
     q = Question.query.get(request.args.get('id'))
     q.quizzes.append(Quiz.query.get(quiz))
     db.session.commit()
     return redirect('/manage/questions')
+
+
+@app.route('/manage/arrange/<quiz>/delete', methods=['POST'])
+def manage_arrange_question_delete(quiz):
+    q = Question.query.get(request.form['id'])
+    q.quizzes.remove(Quiz.query.get(quiz))
+    db.session.commit()
+    return redirect('/manage/arrange/{}'.format(quiz))
 
 
 @app.route('/manage/rooms', methods=['GET', 'POST'])
