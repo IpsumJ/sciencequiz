@@ -1,6 +1,8 @@
 SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://user:password@host:port/dbname'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+UPLOAD_FOLDER = 'media'
+
 HOST = '127.0.0.1'
 PORT = 5000
 DEBUG = False

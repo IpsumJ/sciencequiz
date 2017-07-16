@@ -143,12 +143,21 @@ body {
     margin-left: auto;
     margin-right: auto;
     width: 95%;
+    clear: both;
 }
 
 .question {
     font-size: 25px;
     margin-top: 50px;
     margin-bottom: 45px;
+    float: left;
+}
+.question_container:after {
+        clear: right;
+}
+
+.question_container{
+    display: block;
 }
 
 .questions input[type="text"] {
@@ -228,4 +237,15 @@ body {
 
 .hidden {
     display: none;
+}
+
+.image-preview {
+    max-width: 170px;
+    height: auto;
+}
+
+.display_image {
+    max-width: 300px;
+    height: auto;
+    float: right;
 }

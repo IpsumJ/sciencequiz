@@ -1,10 +1,10 @@
-from flask import Flask, render_template, request, redirect, abort
+from flask import Flask, render_template, request, redirect, abort, send_from_directory
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_sqlalchemy import SQLAlchemy
 from beaker.middleware import SessionMiddleware
-import datetime
 import uuid
 import time
+import os
 
 # TODO!!!: Error handling
 
@@ -17,6 +17,7 @@ session_opts = {
 app = Flask(__name__)
 socketio = SocketIO(app)
 app.config.from_pyfile('config.py')
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif', 'svg'])
 
 timer_thread = None
 
@@ -26,6 +27,11 @@ from model import *
 db.create_all()
 
 app.wsgi_app = SessionMiddleware(app.wsgi_app, session_opts)
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 # CONTEXT PROCESSORS
@@ -44,6 +50,11 @@ def inject_year():
 
 
 @app.context_processor
+def inject_upload_folder():
+    return dict(upload_folder=app.config.get('UPLOAD_FOLDER'))
+
+
+@app.context_processor
 def inject_questiontypes():
     return dict(isinstance=isinstance, QuestionChoose=QuestionChoose,
                 QuestionEstimate=QuestionEstimate, QuestionType=QuestionType)
@@ -55,6 +66,11 @@ def science_quiz():
 
 
 # MANAGE PAGES
+@app.route('/media/<file>')
+def serve_image(file):
+    return send_from_directory(app.config['UPLOAD_FOLDER'],
+                               file)
+
 
 @app.route('/manage')
 def manage():
@@ -107,7 +123,8 @@ def manage_sessions():
         if action == 'run':
             if session.state == SessionState.finished:
                 abort(400, "Session already finished.")
-            if Session.query.filter(Session.on_display(), Session.device_token_id==session.device_token_id).count() > 0:
+            if Session.query.filter(Session.on_display(),
+                                    Session.device_token_id == session.device_token_id).count() > 0:
                 abort(400, "A session is already running in this room.")
             session.state = SessionState.running
             emit('meta_data', {'display_name': session.device_token.name,
@@ -171,9 +188,21 @@ def delete_category(category):
     return redirect('/manage/categories')
 
 
+def handle_question_image():
+    if 'question_image' in request.files:
+        file = request.files['question_image']
+        if file.filename is not '':
+            if file and allowed_file(file.filename):
+                filename = str(uuid.uuid4()) + '.' + file.filename.rsplit('.', 1)[1].lower()
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                return filename
+    return None
+
+
 # TODO: guess question
 @app.route('/manage/questions/new', methods=['GET', 'POST'])
 def manage_questions_new():
+    question = None
     if request.method == 'POST':
         if QuestionType[request.form['type']] == QuestionType.choose:
             if not (request.form['ansA'].strip() and request.form['ansB'].strip() and
@@ -188,6 +217,7 @@ def manage_questions_new():
                 question.answers.append(a)
                 if i == correct:
                     correct_answer = a
+            question.image_file_name = handle_question_image()
             db.session.add(question)
             db.session.commit()
             question.correct_answer = correct_answer.id
@@ -196,6 +226,7 @@ def manage_questions_new():
             question = QuestionEstimate(question=request.form['question'],
                                         category=request.form['category'],
                                         correct_value=float(request.form['correct_value']))
+            question.image_file_name = handle_question_image()
             db.session.add(question)
             db.session.commit()
         else:
@@ -212,7 +243,11 @@ def edit_question(question):
     question = int(question)
     if request.method == 'POST':
         if 'delete' in request.form:
-            Question.query.filter_by(id=question).delete()
+            quest = Question.query.filter_by(id=question)
+            q_obj = quest.first()
+            if q_obj.image_file_name is not None:
+                os.unlink(os.path.join(app.config.get('UPLOAD_FOLDER'), q_obj.image_file_name))
+            quest.delete()
             db.session.commit()
             return redirect('/manage/questions')
         quest_obj = Question.query.get(question)
@@ -226,6 +261,11 @@ def edit_question(question):
             AnswerChoose.query.get(request.form['bid']).answer = request.form['ansB'].strip()
             AnswerChoose.query.get(request.form['cid']).answer = request.form['ansC'].strip()
             AnswerChoose.query.get(request.form['did']).answer = request.form['ansD'].strip()
+            image = handle_question_image()
+            if quest_obj.image_file_name is not None and image is None:
+                os.unlink(os.path.join(app.config.get('UPLOAD_FOLDER'), quest_obj.image_file_name))
+            if image is not None:
+                quest_obj.image_file_name = image
             db.session.commit()
         elif isinstance(quest_obj, QuestionEstimate):
             quest_obj.question = request.form['question']
@@ -385,11 +425,13 @@ def timer_task():
                 if session.device_token is not None:
                     time_running = None
                     if session.start_time is None:
-                        time_running = session.offset 
+                        time_running = session.offset
                     else:
                         time_running = datetime.datetime.now() - session.start_time + session.offset
                     time_total = datetime.timedelta(minutes=15)
-                    socketio.emit('timer', {'time_running': time_running.total_seconds(), 'time_total': time_total.total_seconds()}, room=session.device_token.token, namespace="/quiz")
+                    socketio.emit('timer', {'time_running': time_running.total_seconds(),
+                                            'time_total': time_total.total_seconds()}, room=session.device_token.token,
+                                  namespace="/quiz")
                     if time_running > time_total:
                         session.offset += datetime.datetime.now() - session.start_time        
                         session.start_time = None
@@ -403,11 +445,12 @@ def timer_task():
 
         time.sleep(0.5)
 
+
 def emit_question(question, dev):
     print("emit", question.question)
     emit('question', {'question': question.question, 'a': question.answers[0].answer,
                       'b': question.answers[1].answer, 'c': question.answers[2].answer,
-                      'd': question.answers[3].answer}, room=dev.token)
+                      'd': question.answers[3].answer, 'image': question.image_file_name}, room=dev.token)
 
 
 def get_current_session_by_token(token):
@@ -506,7 +549,7 @@ def pause_quiz(message):
     token = DeviceToken.query.filter_by(token=disp.token).first()
     session = get_current_session_by_token(token)
     if session.start_time is not None:
-        session.offset += datetime.datetime.now() - session.start_time        
+        session.offset += datetime.datetime.now() - session.start_time
         session.start_time = None
         db.session.commit()
     emit('sleep', {}, room=disp.token)

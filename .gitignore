@@ -8,3 +8,4 @@ lib/
 include/
 pip-selfcheck.json
 *.swp
+media/
