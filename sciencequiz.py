@@ -444,7 +444,7 @@ def pause_quiz(message):
     disp = request.environ['beaker.session']['display']
     if not disp.w:
         return
-    emit('sleep', {}, room=disp.token.token)
+    emit('sleep', {}, room=disp.token)
 
 
 @socketio.on('resume_quiz', namespace='/quiz')
@@ -452,7 +452,7 @@ def resmue_quiz(message):
     disp = request.environ['beaker.session']['display']
     if not disp.w:
         return
-    emit('wakeup', {}, room=disp.token.token)
+    emit('wakeup', {}, room=disp.token)
 
 
 @socketio.on('next_question', namespace='/quiz')
