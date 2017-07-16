@@ -33,6 +33,8 @@
     <script type="text/javascript" src="/static/js/quiz.js"></script>
     <script type="text/javascript">
         $(document).ready(function () {
+            $('#endcard').hide();
+            $('#full').show();
             document.addEventListener('keydown', function (event) {
                 if (!running) {
                     return
@@ -105,6 +107,9 @@
             socket.on('selection', function (msg) {
                 $('#' + msg.selected).click();
             });
+            socket.on('finished', function (msg) {
+                $('#endcard').show();
+            });
             socket.on('answer_response', function (msg) {
                 var corr = msg.correct;
                 if ($(".selected").parent().attr("id") != corr) {
@@ -146,11 +151,19 @@
             });
         });
     </script>
-    <div id="full">
+    <div id="full" class="full">
         <div class="centered">
             <img id="logo" src="/static/logo.svg"/>
             <h1>ScienceQuiz</h1>
             <h2 id="name"></h2>
+        </div>
+    </div>
+
+    <div id="endcard" class="full">
+        <div class="centered">
+            <img id="logo" src="/static/logo.svg"/>
+            <h1>Ergebnis</h1>
+            <h2 id="score"></h2>
         </div>
     </div>
 {% endblock %}

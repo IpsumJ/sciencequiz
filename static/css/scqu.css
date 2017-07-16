@@ -212,7 +212,7 @@ body {
     color: #fff;
 }
 
-#full {
+.full {
     width: 100vw;
     height: 100vh;
     position: absolute;
@@ -228,6 +228,11 @@ body {
 .centered #logo {
     margin-left: 60px;
 }
+
+#score {
+    color: #3A7734;
+}
+
 .centered{
     height: 200px;
     left: 50%;
