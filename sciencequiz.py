@@ -419,7 +419,8 @@ def display():
 
 def timer_task():
     while True:
-        sessions = Session.query.options(db.joinedload(Session.device_token)).filter(Session.state == SessionState.running).all()
+        sessions = Session.query.options(db.joinedload(Session.device_token)).filter(
+            Session.state == SessionState.running).all()
         for session in sessions:
             try:
                 if session.device_token is not None:
@@ -433,17 +434,38 @@ def timer_task():
                                             'time_total': time_total.total_seconds()}, room=session.device_token.token,
                                   namespace="/quiz")
                     if time_running > time_total:
-                        session.offset += datetime.datetime.now() - session.start_time        
+                        session.offset += datetime.datetime.now() - session.start_time
                         session.start_time = None
                         session.state = SessionState.finished
                         db.session.commit()
-                        socketio.emit('finished', {}, room=session.device_token.token, namespace="/quiz")
+                        emit_state()
             except Exception as e:
                 print("Exception occurred in timer, please dont die...")
                 print(e)
         db.session.rollback()  # Needed to include newer commits in result
 
         time.sleep(0.5)
+
+
+def emit_state():
+    disp = request.environ['beaker.session']['display']
+    token = DeviceToken.query.filter_by(token=disp.token).first()
+    session = get_current_session_by_token(token)
+    if session is None:
+        emit('meta_data', {'display_name': token.name, 'team_names': []}, room=token.token)
+        return
+
+    if session.state == SessionState.finished:
+        emit('wakeup', {}, room=disp.token, namespace="/quiz")
+        socketio.emit('finished', {}, room=session.device_token.token, namespace="/quiz")
+        emit('meta_data', {'display_name': token.name, 'team_names': [t.team.name for t in session.team_sessions]},
+             namespace="/quiz")
+        return
+
+    if session.start_time is None:
+        emit('sleep', {}, room=disp.token, namespace="/quiz")
+    else:
+        emit('wakeup', {}, room=disp.token, namespace="/quiz")
 
 
 def emit_question(question, dev):
