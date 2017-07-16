@@ -180,6 +180,12 @@ body {
     border-spacing: 0;
 }
 
+#logo_head {
+    width: 200px;
+    height: auto;
+    display: block;
+}
+
 #logo {
     width: 300px;
     height: auto;
@@ -229,7 +235,7 @@ body {
     margin-top: -190px;
     padding: 25px;
     position: absolute;
-    top: 50%;
+    top: 30%;
     width:400px;
     text-align:center;
     font-size: 30pt;
