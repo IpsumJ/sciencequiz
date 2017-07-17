@@ -434,9 +434,7 @@ def timer_task():
                                             'time_total': time_total.total_seconds()}, room=session.device_token.token,
                                   namespace="/quiz")
                     if time_running > time_total:
-                        session.offset += datetime.datetime.now() - session.start_time
-                        session.start_time = None
-                        session.state = SessionState.finished
+                        finish_session(session)
                         db.session.commit()
                         emit_state()
             except Exception as e:
@@ -445,6 +443,19 @@ def timer_task():
         db.session.rollback()  # Needed to include newer commits in result
 
         time.sleep(0.5)
+
+def finish_session(session):
+    pause_timer(session)
+    session.state = SessionState.finished
+
+def pause_timer(session):
+    if session.start_time is not None:
+        session.offset += datetime.datetime.now() - session.start_time
+        session.start_time = None
+
+def resume_timer(session):
+    if session.start_time is None:
+        session.start_time = datetime.datetime.now()
 
 
 def emit_state():
@@ -462,11 +473,12 @@ def emit_state():
         emit('meta_data', {'display_name': token.name, 'team_names': [t.team.name for t in session.team_sessions]},
              namespace="/quiz")
         return
-
-    if session.start_time is None:
+    elif session.state == SessionState.paused:
         emit('sleep', {}, room=disp.token, namespace="/quiz")
-    else:
+    elif session.state == SessionState.running:
         emit('wakeup', {}, room=disp.token, namespace="/quiz")
+    else:
+        print("This should not happen")
 
 
 def emit_question(question, dev):
@@ -543,6 +555,8 @@ def answer_selected(message):
     ans_index = ord(ans) - 97
     token = DeviceToken.query.filter_by(token=disp.token).first()
     session = get_current_session_by_token(token=token)
+    pause_timer(session)
+    db.session.commit()
     choose = None
     if isinstance(session.current_question, QuestionChoose):
         # TODO! multiteam
@@ -563,10 +577,9 @@ def pause_quiz(message):
         return
     token = DeviceToken.query.filter_by(token=disp.token).first()
     session = get_current_session_by_token(token)
-    if session.start_time is not None:
-        session.offset += datetime.datetime.now() - session.start_time
-        session.start_time = None
-        db.session.commit()
+    pause_timer()
+    session.state = SessionState.paused
+    db.session.commit()
     emit('sleep', {}, room=disp.token)
 
 
@@ -577,9 +590,9 @@ def resmue_quiz(message):
         return
     token = DeviceToken.query.filter_by(token=disp.token).first()
     session = get_current_session_by_token(token)
-    if session.start_time is None:
-        session.start_time = datetime.datetime.now()
-        db.session.commit()
+    resume_timer()
+    session.state = SessionState.running
+    db.session.commit()
     emit('wakeup', {}, room=disp.token)
 
 
@@ -588,6 +601,8 @@ def next_q(message):
     disp = request.environ['beaker.session']['display']
     token = DeviceToken.query.filter_by(token=disp.token).first()
     session = get_current_session_by_token(token)
+    resume_timer(session)
+    db.session.commit()
     quiz = session.quiz
     qs = quiz.questions
     current = None
@@ -616,6 +631,8 @@ def prev_q(message):
     disp = request.environ['beaker.session']['display']
     token = DeviceToken.query.filter_by(token=disp.token).first()
     session = get_current_session_by_token(token)
+    resume_timer(session)
+    db.session.commit()
     quiz = session.quiz
     qs = quiz.questions
     current = None

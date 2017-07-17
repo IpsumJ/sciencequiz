@@ -18,8 +18,12 @@
                             <span class="glyphicon glyphicon-play" aria-hidden="true"></span></button>
                     </form>
                     <span class="clearfix"></span>
-                {% elif s.state|string == 'SessionState.running' %}
+                {% elif s.state|string == 'SessionState.running' or s.state|string == 'SessionState.paused' %}
+                    {% if s.state|string == 'SessionState.running' %} 
                     <span class="label label-primary">In Ausführung</span>
+                    {% else %}
+                    <span class="label label-primary">Pausiert</span>
+                    {% endif %}
                     <form method="post" class="pull-right" style="display: inline">
                         <input type="hidden" name="action" value="cancel">
                         <input type="hidden" value="{{ s.id }}" name="session">
@@ -48,13 +52,14 @@
                 {% for ts in s.team_sessions %}
                     <tr>
                         <td>{{ ts.team.name }}</td>
+                        <td>
                         {% if s.state|string != 'SessionState.pending' %}
-                        <td>{{ ts.score() }}</td>
+                        {{ ts.score() }}
                         {% endif %}
+                        </td>
                     </tr>
                 {% endfor %}
             </table>
-            <b>Score: TODO</b>
         </div>
     {% endfor %}
 {% endblock %}

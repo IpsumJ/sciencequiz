@@ -108,8 +108,9 @@ class User(db.Model):
 class SessionState(enum.Enum):
     pending = 1
     running = 2
-    finished = 3
-    closed = 4
+    paused = 3
+    finished = 4
+    closed = 5
 
 
 class Session(db.Model):
@@ -123,7 +124,7 @@ class Session(db.Model):
     state = db.Column(db.Enum(SessionState), nullable=False)
     current_question_id = db.Column(db.ForeignKey('questions.id'), nullable=True)
     current_question = db.relationship('Question')
-    start_time = db.Column(db.DateTime, nullable=True)  # Quiz is paused if start_time is NULL
+    start_time = db.Column(db.DateTime, nullable=True)  # Quiz is temporarily paused if start_time is NULL
     offset = db.Column(db.Interval, nullable=False, default=datetime.timedelta())
 
     @classmethod
@@ -131,7 +132,7 @@ class Session(db.Model):
         '''
         Whether the session should currently be displayed in its room
         '''
-        return db.or_(cls.state == SessionState.running, cls.state == SessionState.finished)
+        return db.or_(cls.state == SessionState.running, cls.state == SessionState.finished, cls.state == SessionState.paused)
 
 
 class TeamSession(db.Model):
