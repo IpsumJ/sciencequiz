@@ -577,7 +577,7 @@ def pause_quiz(message):
         return
     token = DeviceToken.query.filter_by(token=disp.token).first()
     session = get_current_session_by_token(token)
-    pause_timer()
+    pause_timer(session)
     session.state = SessionState.paused
     db.session.commit()
     emit('sleep', {}, room=disp.token)
@@ -590,7 +590,7 @@ def resmue_quiz(message):
         return
     token = DeviceToken.query.filter_by(token=disp.token).first()
     session = get_current_session_by_token(token)
-    resume_timer()
+    resume_timer(session)
     session.state = SessionState.running
     db.session.commit()
     emit('wakeup', {}, room=disp.token)
