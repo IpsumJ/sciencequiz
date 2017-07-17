@@ -42,9 +42,15 @@
 
             </div>
             <table class="table">
+                <tr>
+                    <th>Team</th><th>Score</th>
+                </tr>
                 {% for ts in s.team_sessions %}
                     <tr>
                         <td>{{ ts.team.name }}</td>
+                        {% if s.state|string != 'SessionState.pending' %}
+                        <td>{{ ts.score() }}</td>
+                        {% endif %}
                     </tr>
                 {% endfor %}
             </table>

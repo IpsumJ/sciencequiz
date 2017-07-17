@@ -143,6 +143,32 @@ class TeamSession(db.Model):
     session = db.relationship("Session")
     answers = db.relationship("TeamAnswer")
 
+    def score(self):
+        result = 0.0
+        for answer in self.answers:
+            if isinstance(answer, TeamAnswerChoose):
+                answer_choose = answer.answer
+                if answer_choose.question.correct_answer_id == answer_choose.id:
+                    result += 1.0
+            elif isinstance(answer, TeamAnswerEstimate):
+                correct_estimate = answer.question.correct_value
+                other_estimates = TeamAnswerEstimate.query.join(TeamAnswerEstimate.team_session).filter(
+                                      TeamSession.session_id == self.session_id,  # Same session
+                                      TeamAnswerEstimate.question_id == answer.question_id,  # Same question
+                                      TeamAnswerEstimate.id != answer.id  # Not me
+                                  ).options(db.load_only("estimate")).all()
+                other_estimate_dists = [abs(x.estimate - correct_estimate) for x in other_estimates]
+                my_estimate_dist = abs(answer.estimate - correct_estimate)
+                if len(other_estimate_dists) == 0:
+                    result += 1.0
+                else:
+                    best_other_dist = min(other_estimate_dists)
+                    if my_estimate_dist < best_other_dist:
+                        result += 1.0
+            else:
+                print("WAT?")
+        return result
+
 
 class TeamAnswer(db.Model):
     __tablename__ = 'team_answers'
