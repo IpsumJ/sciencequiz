@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, abort, send_from_directory
+from flask import Flask, render_template, request, redirect, abort, send_from_directory, url_for
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_sqlalchemy import SQLAlchemy
 from beaker.middleware import SessionMiddleware
@@ -63,7 +63,8 @@ def inject_questiontypes():
 
 @app.route('/')
 def science_quiz():
-    return render_template('main.html', title="ScienceQuiz")
+    #return render_template('main.html', title="ScienceQuiz")
+    return redirect(url_for('manage'))
 
 
 # MANAGE PAGES
