@@ -671,5 +671,12 @@ def cancel_quiz(message):
     emit('sleep', {}, room=disp.token)
 
 
+@app.errorhandler(Exception)
+def err_rollback(err):
+    print("Rollback.")
+    db.session.rollback()
+    return 'An error occured.', 500
+
+
 if __name__ == '__main__':
     app.run(port=app.config.get('PORT'), threaded=True)
