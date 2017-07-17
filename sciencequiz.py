@@ -99,6 +99,7 @@ def manage_teams_new():
         return redirect('/manage/teams')
     return render_template('manage/teams_new.html')
 
+
 @app.route('/manage/team/<team_id>/edit', methods=['GET', 'POST'])
 def manage_teams_edit(team_id):
     t = Team.query.filter_by(id=team_id).first()
@@ -112,8 +113,8 @@ def manage_teams_edit(team_id):
             year = request.form['year'].strip()
             if not year:
                 year = datetime.datetime.now().year
-            t.name=request.form['name'].strip()
-            t.year=year
+            t.name = request.form['name'].strip()
+            t.year = year
             db.session.commit()
         return redirect('/manage/teams')
     return render_template('manage/teams_new.html', t=t)
@@ -252,7 +253,10 @@ def edit_question(question):
             quest = Question.query.filter_by(id=question)
             q_obj = quest.first()
             if q_obj.image_file_name is not None:
-                os.unlink(os.path.join(app.config.get('UPLOAD_FOLDER'), q_obj.image_file_name))
+                try:
+                    os.unlink(os.path.join(app.config.get('UPLOAD_FOLDER'), q_obj.image_file_name))
+                except FileNotFoundError:
+                    print('Could not delete image... strange.')
             quest.delete()
             db.session.commit()
             return redirect('/manage/questions')
@@ -269,7 +273,10 @@ def edit_question(question):
             AnswerChoose.query.get(request.form['did']).answer = request.form['ansD'].strip()
             image = handle_question_image()
             if quest_obj.image_file_name is not None and image is None:
-                os.unlink(os.path.join(app.config.get('UPLOAD_FOLDER'), quest_obj.image_file_name))
+                try:
+                    os.unlink(os.path.join(app.config.get('UPLOAD_FOLDER'), quest_obj.image_file_name))
+                except FileNotFoundError:
+                    print('Could not delete image... strange.')
             if image is not None:
                 quest_obj.image_file_name = image
             db.session.commit()
@@ -474,7 +481,8 @@ def emit_state(token):
         socketio.emit('sleep', {}, room=token.token, namespace="/quiz")
         return
 
-    socketio.emit('meta_data', {'display_name': token.name, 'teams': [{'id': t.team.id, 'name': t.team.name} for t in session.team_sessions]},
+    socketio.emit('meta_data', {'display_name': token.name,
+                                'teams': [{'id': t.team.id, 'name': t.team.name} for t in session.team_sessions]},
                   namespace="/quiz")
 
     if session.state == SessionState.finished:
