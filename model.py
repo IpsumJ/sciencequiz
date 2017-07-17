@@ -37,7 +37,7 @@ class Question(db.Model):
 class QuestionChoose(Question):
     correct_answer_id = db.Column(db.ForeignKey('answers_choose.id'),
                                nullable=True)  # Has to be nullable because of inheritance. Use join instead?
-    answers = db.relationship('AnswerChoose', foreign_keys='[AnswerChoose.question_id]')
+    answers = db.relationship('AnswerChoose', foreign_keys='[AnswerChoose.question_id]', order_by="AnswerChoose.id")
     __mapper_args__ = {
         'polymorphic_identity': QuestionType.choose
     }
