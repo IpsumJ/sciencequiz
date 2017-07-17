@@ -233,6 +233,10 @@ body {
     color: #3A7734;
 }
 
+#timer {
+    text-align: center;
+}
+
 .centered{
     height: 200px;
     left: 50%;

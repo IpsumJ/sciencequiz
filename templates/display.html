@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block body %}
+    <h2 id="timer"></h2>
     <div class="question_container">
         <p class="question" id="question">Loading...</p>
         <img id="question_image" class="display_image" src="">
@@ -81,14 +82,14 @@
                 $('#c .anstext').html(msg.c);
                 $('#d .anstext').html(msg.d);
                 window.console.debug(msg.image);
-                if (msg.image) {
+                if (msg.image != null) {
                     window.console.debug(msg.image);
                     $('#question_image').show();
-                    $('#logo').hide();
+                    $('#logo_head').hide();
                     $('#question_image').attr('src', '/{{ upload_folder }}/' + msg.image);
                 } else {
                     $('#question_image').hide();
-                    $('#logo').show();
+                    $('#logo_head').show();
                 }
             });
             socket.on('sleep', function (msg) {
@@ -109,6 +110,10 @@
             });
             socket.on('finished', function (msg) {
                 $('#endcard').show();
+            });
+            socket.on('timer', function (msg) {
+                var date = new Date((msg.time_total - msg.time_running) * 1000);
+                $('#timer').html(date.getMinutes()+':'+ (date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds()));
             });
             socket.on('answer_response', function (msg) {
                 var corr = msg.correct;
