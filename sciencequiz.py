@@ -111,7 +111,7 @@ def manage_sessions():
         action = request.form['action']
         session = Session.query.get(request.form['session'])
         if action == 'cancel':
-            if session.state != SessionState.running:
+            if session.state != SessionState.running and session.state != SessionState.paused:
                 abort(400, "Session not running.")
             session.current_question = None
             session.state = SessionState.pending
