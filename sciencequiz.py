@@ -115,33 +115,25 @@ def manage_sessions():
                 abort(400, "Session not running.")
             session.current_question = None
             session.state = SessionState.pending
-            emit('meta_data', {'display_name': session.device_token.name, 'team_names': []},
-                 room=session.device_token.token, namespace='/quiz')
-            emit('sleep', {},
-                 room=session.device_token.token, namespace='/quiz')
             db.session.commit()
+            emit_state()
         if action == 'run':
             if session.state == SessionState.finished:
                 abort(400, "Session already finished.")
             if Session.query.filter(Session.on_display(),
                                     Session.device_token_id == session.device_token_id).count() > 0:
                 abort(400, "A session is already running in this room.")
-            session.state = SessionState.running
-            emit('meta_data', {'display_name': session.device_token.name,
-                               'team_names': [t.team.name for t in session.team_sessions]},
-                 room=session.device_token.token, namespace='/quiz')
+            session.state = SessionState.paused
             db.session.commit()
+            emit_state()
         if action == 'close':
             if session.state == SessionState.closed:
                 abort(400, "Session already closed.")
             if session.state == SessionState.pending:
                 abort(400, "Session not running or finished.")
             session.state = SessionState.closed
-            emit('meta_data', {'display_name': session.device_token.name, 'team_names': []},
-                 room=session.device_token.token, namespace='/quiz')
-            emit('sleep', {},
-                 room=session.device_token.token, namespace='/quiz')
             db.session.commit()
+            emit_state()
         redirect('/manage/sessions')
     return render_template('manage/sessions.html', sessions=Session.query.all())
 
