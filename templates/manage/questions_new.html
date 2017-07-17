@@ -19,7 +19,7 @@
                     <tr>
                         <th><label>Bild</label></th>
                         <td><input type="file" name="question_image"></td>
-                        <td>{% if q and q.image_file_name %}<img class="image-preview" src="/{{ upload_folder }}/{{ q.image_file_name }}"/>{% endif %}</td>
+                        <td>{% if q and q.image_file_name %}<img class="image-preview" src="/media/{{ q.image_file_name }}"/>{% endif %}</td>
                     </tr>
                     <tr>
                         <th><label>Kategorie</label></th>

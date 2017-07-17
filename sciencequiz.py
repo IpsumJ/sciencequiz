@@ -51,11 +51,6 @@ def inject_year():
 
 
 @app.context_processor
-def inject_upload_folder():
-    return dict(upload_folder=app.config.get('UPLOAD_FOLDER'))
-
-
-@app.context_processor
 def inject_questiontypes():
     return dict(isinstance=isinstance, QuestionChoose=QuestionChoose,
                 QuestionEstimate=QuestionEstimate, QuestionType=QuestionType)
