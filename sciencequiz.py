@@ -63,7 +63,7 @@ def inject_questiontypes():
 
 @app.route('/')
 def science_quiz():
-    #return render_template('main.html', title="ScienceQuiz")
+    # return render_template('main.html', title="ScienceQuiz")
     return redirect(url_for('manage'))
 
 
@@ -463,7 +463,7 @@ def emit_state(token):
         return
 
     socketio.emit('meta_data', {'display_name': token.name, 'team_names': [t.team.name for t in session.team_sessions]},
-         namespace="/quiz")
+                  namespace="/quiz")
 
     if session.state == SessionState.finished:
         socketio.emit('wakeup', {}, room=token.token, namespace="/quiz")
@@ -480,9 +480,18 @@ def emit_state(token):
 
 def emit_question(question, dev):
     print("emit", question.question)
-    emit('question', {'question': question.question, 'a': question.answers[0].answer,
-                      'b': question.answers[1].answer, 'c': question.answers[2].answer,
-                      'd': question.answers[3].answer, 'image': question.image_file_name}, room=dev.token)
+    token = DeviceToken.query.filter_by(token=dev.token).first()
+    session = get_current_session_by_token(token)
+    answers = TeamAnswerChoose.query.join(TeamAnswerChoose.team_session).filter(
+        TeamSession.session_id == session.id).join(
+        TeamAnswerChoose.answer).filter(AnswerChoose.question_id == question.id).all()
+    print(type(answers))
+    socketio.emit('question', {'question': {'id': question.id, 'question': question.question,
+                                            'answers': [{'id': a.id, 'answer': a.answer} for a in question.answers],
+                                            'image': question.image_file_name,
+                                            'team_answers': [{str(a.team_session.team_id): a.answer_id} for a in
+                                                             answers]}},
+                  room=dev.token, namespace='/quiz')
 
 
 def get_current_session_by_token(token):
@@ -511,7 +520,8 @@ def quiz_connect():
             if session.current_question is not None:
                 print('emit current')
                 emit_question(session.current_question, disp)
-            emit('meta_data', {'display_name': token.name, 'team_names': [t.team.name for t in session.team_sessions]})
+            emit('meta_data',
+                 {'display_name': token.name, 'team_names': [t.team.name for t in session.team_sessions]})
             emit_state(token)
 
 
@@ -529,18 +539,9 @@ def answer_selected_result(message):
     if not disp.w:
         return
     token = DeviceToken.query.filter_by(token=disp.token).first()
-    ans = message['sel']
-    index = ord(ans) - 97
-    correct_index = 0
     quest = get_current_session_by_token(token).current_question
-    for a in quest.answers:
-        if a.id == quest.correct_answer_id:
-            break
-        correct_index += 1
-    # answer is correct, do something
-    if index == correct_index:
-        pass
-    emit('answer_response', {'correct': chr(97 + correct_index)}, room=disp.token)
+    if isinstance(quest, QuestionChoose):
+        emit('answer_response', {'correct': quest.correct_answer_id}, room=disp.token)
 
 
 # TODO!
@@ -549,8 +550,7 @@ def answer_selected(message):
     disp = request.environ['beaker.session']['display']
     if not disp.w:
         return
-    ans = message['sel']
-    ans_index = ord(ans) - 97
+    ans = message['id']
     token = DeviceToken.query.filter_by(token=disp.token).first()
     session = get_current_session_by_token(token=token)
     pause_timer(session)
@@ -559,7 +559,7 @@ def answer_selected(message):
     if isinstance(session.current_question, QuestionChoose):
         # TODO! multiteam
         choose = TeamAnswerChoose(team_session=session.team_sessions[0],
-                                  answer=session.current_question.answers[ans_index])
+                                  answer_id=ans)
     elif isinstance(session.current_question, QuestionEstimate):
         # TODO
         pass
