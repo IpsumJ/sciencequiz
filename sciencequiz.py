@@ -444,14 +444,17 @@ def timer_task():
 
         time.sleep(0.5)
 
+
 def finish_session(session):
     pause_timer(session)
     session.state = SessionState.finished
+
 
 def pause_timer(session):
     if session.start_time is not None:
         session.offset += datetime.datetime.now() - session.start_time
         session.start_time = None
+
 
 def resume_timer(session):
     if session.start_time is None:
@@ -468,7 +471,7 @@ def emit_state():
 
     if session.state == SessionState.finished:
         emit('wakeup', {}, room=disp.token, namespace="/quiz")
-        socketio.emit('finished', {'a':'b', 'score': [t.score() for t in session.team_sessions]},
+        socketio.emit('finished', {'a': 'b', 'score': [t.score() for t in session.team_sessions]},
                       room=session.device_token.token, namespace="/quiz")
         emit('meta_data', {'display_name': token.name, 'team_names': [t.team.name for t in session.team_sessions]},
              namespace="/quiz")
