@@ -459,15 +459,17 @@ def emit_state():
     token = DeviceToken.query.filter_by(token=disp.token).first()
     session = get_current_session_by_token(token)
     if session is None:
-        emit('meta_data', {'display_name': token.name, 'team_names': []}, room=token.token)
+        emit('meta_data', {'display_name': token.name, 'team_names': []}, room=token.token, namespace="/quiz")
+        emit('sleep', {}, room=disp.token, namespace="/quiz")
         return
+
+    emit('meta_data', {'display_name': token.name, 'team_names': [t.team.name for t in session.team_sessions]},
+         namespace="/quiz")
 
     if session.state == SessionState.finished:
         emit('wakeup', {}, room=disp.token, namespace="/quiz")
         socketio.emit('finished', {'a': 'b', 'score': [t.score() for t in session.team_sessions]},
                       room=session.device_token.token, namespace="/quiz")
-        emit('meta_data', {'display_name': token.name, 'team_names': [t.team.name for t in session.team_sessions]},
-             namespace="/quiz")
         return
     elif session.state == SessionState.paused:
         emit('sleep', {}, room=disp.token, namespace="/quiz")
