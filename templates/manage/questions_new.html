@@ -41,28 +41,28 @@
                         <th><label>A</label></th>
                         {% if q %}<input type="hidden" name="aid" value="{{ q.answers[0].id }}"/>{% endif %}
                         <td><textarea class="form-control" name="ansA">{% if q %}{{ q.answers[0].answer }}{% endif %}</textarea></td>
-                        <td><input type="radio" {% if not q or q.correct_answer == q.answers[0].id %}checked{% endif %} name="correct"
+                        <td><input type="radio" {% if not q or q.correct_answer_id == q.answers[0].id %}checked{% endif %} name="correct"
                                    value="a"/></td>
                     </tr>
                     <tr>
                         <th><label>B</label></th>
                         {% if q %}<input type="hidden" name="bid" value="{{ q.answers[1].id }}"/>{% endif %}
                         <td><textarea class="form-control" name="ansB">{% if q %}{{ q.answers[1].answer }}{% endif %}</textarea></td>
-                        <td><input type="radio" {% if q and q.correct_answer == q.answers[1].id %}checked{% endif %} name="correct"
+                        <td><input type="radio" {% if q and q.correct_answer_id == q.answers[1].id %}checked{% endif %} name="correct"
                                    value="b"/></td>
                     </tr>
                     <tr>
                         <th><label>C</label></th>
                         {% if q %}<input type="hidden" name="cid" value="{{ q.answers[2].id }}"/>{% endif %}
                         <td><textarea class="form-control" name="ansC">{% if q %}{{ q.answers[2].answer }}{% endif %}</textarea></td>
-                        <td><input type="radio" {% if q and q.correct_answer == q.answers[2].id %}checked{% endif %} name="correct"
+                        <td><input type="radio" {% if q and q.correct_answer_id == q.answers[2].id %}checked{% endif %} name="correct"
                                    value="c"/></td>
                     </tr>
                     <tr>
                         <th><label>D</label></th>
                         {% if q %}<input type="hidden" name="did" value="{{ q.answers[3].id }}"/>{% endif %}
                         <td><textarea class="form-control" name="ansD">{% if q %}{{ q.answers[3].answer }}{% endif %}</textarea></td>
-                        <td><input type="radio" {% if q and q.correct_answer == q.answers[3].id %}checked{% endif %} name="correct"
+                        <td><input type="radio" {% if q and q.correct_answer_id == q.answers[3].id %}checked{% endif %} name="correct"
                                    value="d"/></td>
                     </tr>
                     {% endif %}

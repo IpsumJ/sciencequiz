@@ -208,23 +208,23 @@ def manage_questions_new():
             if not (request.form['ansA'].strip() and request.form['ansB'].strip() and
                         request.form['ansC'].strip() and request.form['ansD'].strip()):
                 abort(400, "Some anwers are empty")
-            question = QuestionChoose(question=request.form['question'], category=request.form['category'])
+            question = QuestionChoose(question=request.form['question'], category_id=request.form['category'])
             correct = ord(request.form['correct'].upper())
             correct_answer = None
             # db.mapper(Question, db.metadata.tables['questions'], non_primary=True, properties={'correct_answer': db.relationship(Answer)})
             for i in range(ord('A'), ord('E')):
-                a = AnswerChoose(question=question, answer=request.form['ans' + chr(i)])
+                a = AnswerChoose(question_id=question, answer=request.form['ans' + chr(i)])
                 question.answers.append(a)
                 if i == correct:
                     correct_answer = a
             question.image_file_name = handle_question_image()
             db.session.add(question)
             db.session.commit()
-            question.correct_answer = correct_answer.id
+            question.correct_answer_id = correct_answer.id
             db.session.commit()
         elif QuestionType[request.form['type']] == QuestionType.estimate:
             question = QuestionEstimate(question=request.form['question'],
-                                        category=request.form['category'],
+                                        category_id=request.form['category'],
                                         correct_value=float(request.form['correct_value']))
             question.image_file_name = handle_question_image()
             db.session.add(question)
@@ -255,7 +255,7 @@ def edit_question(question):
             correct = request.form['correct']
             quest_obj.question = request.form['question']
             quest_obj.category = request.form['category'],
-            quest_obj.correct_answer = quest_obj.answers[ord(correct) - 97].id
+            quest_obj.correct_answer_id = quest_obj.answers[ord(correct) - 97].id
 
             AnswerChoose.query.get(request.form['aid']).answer = request.form['ansA'].strip()
             AnswerChoose.query.get(request.form['bid']).answer = request.form['ansB'].strip()
@@ -531,7 +531,7 @@ def answer_selected_result(message):
     correct_index = 0
     quest = get_current_session_by_token(token).current_question
     for a in quest.answers:
-        if a.id == quest.correct_answer:
+        if a.id == quest.correct_answer_id:
             break
         correct_index += 1
     # answer is correct, do something
