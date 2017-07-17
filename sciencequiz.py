@@ -667,7 +667,7 @@ def cancel_quiz(message):
 @app.errorhandler(Exception)
 def err_rollback(err):
     print("Rollback.")
-    traceback.print_exception(err)
+    traceback.print_exc()
     db.session.rollback()
     return 'An error occured.', 500
 
