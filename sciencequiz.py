@@ -457,22 +457,22 @@ def resume_timer(session):
 def emit_state(token):
     session = get_current_session_by_token(token)
     if session is None:
-        emit('meta_data', {'display_name': token.name, 'team_names': []}, room=token.token, namespace="/quiz")
-        emit('sleep', {}, room=token.token, namespace="/quiz")
+        socketio.emit('meta_data', {'display_name': token.name, 'team_names': []}, room=token.token, namespace="/quiz")
+        socketio.emit('sleep', {}, room=token.token, namespace="/quiz")
         return
 
-    emit('meta_data', {'display_name': token.name, 'team_names': [t.team.name for t in session.team_sessions]},
+    socketio.emit('meta_data', {'display_name': token.name, 'team_names': [t.team.name for t in session.team_sessions]},
          namespace="/quiz")
 
     if session.state == SessionState.finished:
-        emit('wakeup', {}, room=token.token, namespace="/quiz")
+        socketio.emit('wakeup', {}, room=token.token, namespace="/quiz")
         socketio.emit('finished', {'a': 'b', 'score': [t.score() for t in session.team_sessions]},
                       room=session.device_token.token, namespace="/quiz")
         return
     elif session.state == SessionState.paused:
-        emit('sleep', {}, room=token.token, namespace="/quiz")
+        socketio.emit('sleep', {}, room=token.token, namespace="/quiz")
     elif session.state == SessionState.running:
-        emit('wakeup', {}, room=token.token, namespace="/quiz")
+        socketio.emit('wakeup', {}, room=token.token, namespace="/quiz")
     else:
         print("This should not happen")
 
