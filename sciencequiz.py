@@ -457,7 +457,8 @@ def emit_state():
 
     if session.state == SessionState.finished:
         emit('wakeup', {}, room=disp.token, namespace="/quiz")
-        socketio.emit('finished', {}, room=session.device_token.token, namespace="/quiz")
+        socketio.emit('finished', {'a':'b', 'score': [t.score() for t in session.team_sessions]},
+                      room=session.device_token.token, namespace="/quiz")
         emit('meta_data', {'display_name': token.name, 'team_names': [t.team.name for t in session.team_sessions]},
              namespace="/quiz")
         return
@@ -502,15 +503,7 @@ def quiz_connect():
                 print('emit current')
                 emit_question(session.current_question, disp)
             emit('meta_data', {'display_name': token.name, 'team_names': [t.team.name for t in session.team_sessions]})
-            if session.state == SessionState.running:
-                if session.start_time is None:
-                    emit("sleep", {}, room=token.token)
-                else:
-                    emit("wakeup", {}, room=token.token)
-            elif session.state == SessionState.finished:
-                emit("finished", {}, room=token.token)
-            else:
-                print("Unknown state in connect")
+            emit_state()
 
 
 @socketio.on('disconnect', namespace='/quiz')
@@ -644,6 +637,11 @@ def prev_q(message):
     session.current_question = current
     db.session.commit()
     emit_question(current, disp)
+
+
+@socketio.on('finish_quiz')
+def finish_quiz():
+    pass
 
 
 @socketio.on('cancel_quiz', namespace='/quiz')

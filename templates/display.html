@@ -109,6 +109,8 @@
                 $('#' + msg.selected).click();
             });
             socket.on('finished', function (msg) {
+                window.console.debug(msg);
+                $('#score').html(msg.score[0] + ' Punkt(e)');
                 $('#endcard').show();
             });
             socket.on('timer', function (msg) {
@@ -136,9 +138,6 @@
                     if (!selected)
                         $(v).find('.ansletter').toggleClass("highlight");
                 });
-            });
-
-            $(".answer").each(function (i, v) {
                 $(v).on('click', function () {
                     if (!selected) {
                         $(v).find('.ansletter').addClass("permahighlight");
