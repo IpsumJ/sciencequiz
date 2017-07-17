@@ -553,8 +553,8 @@ def answer_selected(message):
     choose = None
     if isinstance(session.current_question, QuestionChoose):
         # TODO! multiteam
-        choose = TeamAnswerChoose(team_session=session.team_sessions[0].id,
-                                  answer=session.current_question.answers[ans_index].id)
+        choose = TeamAnswerChoose(team_session=session.team_sessions[0],
+                                  answer=session.current_question.answers[ans_index])
     elif isinstance(session.current_question, QuestionEstimate):
         # TODO
         pass
