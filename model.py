@@ -12,7 +12,7 @@ class Category(db.Model):
     __tablename__ = 'categories'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(250), nullable=False)
-    questions = db.relationship("Question")
+    questions = db.relationship("Question", order_by="Question.id")
 
 
 class QuestionType(enum.Enum):
