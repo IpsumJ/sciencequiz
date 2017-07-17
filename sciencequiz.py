@@ -513,7 +513,7 @@ def quiz_connect():
         token = DeviceToken.query.filter_by(token=disp.token).first()
         join_room(token.token)
         session = get_current_session_by_token(token)
-        emit('meta_data', {'display_name': token.name, 'team_names': []}, room=token.token)
+        emit('meta_data', {'display_name': token.name, 'teams': []}, room=token.token)
         if session is None:
             emit('sleep', room=token.token)
         else:
@@ -521,7 +521,8 @@ def quiz_connect():
                 print('emit current')
                 emit_question(session.current_question, disp)
             emit('meta_data',
-                 {'display_name': token.name, 'team_names': [t.team.name for t in session.team_sessions]})
+                 {'display_name': token.name,
+                  'teams': [{'id': t.team.id, 'name': t.team.name} for t in session.team_sessions]})
             emit_state(token)
 
 
