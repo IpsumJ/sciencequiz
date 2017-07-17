@@ -61,7 +61,7 @@
                         break;
                 }
             });
-            var socket = io.connect('http://' + document.domain + ':' + location.port + '/quiz');
+            var socket = io.connect(location.protocol+'//' + document.domain + ':' + location.port + '/quiz');
 
             socket.on('meta_data', function (msg) {
                 var disp = msg.display_name;
