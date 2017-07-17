@@ -130,6 +130,7 @@ def manage_sessions():
                 abort(400, "Session not running.")
             session.current_question = None
             session.state = SessionState.pending
+
             db.session.commit()
             emit_state(session.device_token)
         if action == 'run':
@@ -139,6 +140,18 @@ def manage_sessions():
                                     Session.device_token_id == session.device_token_id).count() > 0:
                 abort(400, "A session is already running in this room.")
             session.state = SessionState.paused
+            session.offset = datetime.timedelta()
+            session.start_time = None
+
+            # Set current question to first
+            quiz = session.quiz
+            qs = quiz.questions
+            session.current_question = qs[0]
+            
+            # Delete existing answers
+            sq = db.session.query(TeamAnswer.id).join(TeamAnswer.team_session).filter(TeamSession.session_id == session.id).subquery()
+            TeamAnswer.query.filter(TeamAnswer.id.in_(sq)).delete(synchronize_session = False)  # Watch out: objects not removed from session until next commit/rollback
+
             db.session.commit()
             emit_state(session.device_token)
         if action == 'close':

@@ -66,7 +66,7 @@ class Quiz(db.Model):
     name = db.Column(db.String(250), nullable=False)
     year = db.Column(db.Integer, nullable=False)
     questions = db.relationship("Question", secondary=association_quiz_questions,
-                                back_populates="quizzes")
+                                back_populates="quizzes", order_by="Question.id")
 
 
 class DeviceToken(db.Model):
