@@ -506,8 +506,8 @@ def emit_question(question, dev):
     socketio.emit('question', {'question': {'id': question.id, 'question': question.question,
                                             'answers': [{'id': a.id, 'answer': a.answer} for a in question.answers],
                                             'image': question.image_file_name,
-                                            'team_answers': [{str(a.team_session.team_id): a.answer_id} for a in
-                                                             answers]}},
+                                            'team_answers': {str(a.team_session.team_id): a.answer_id for a in
+                                                             answers}}},
                   room=dev.token, namespace='/quiz')
 
 
@@ -534,12 +534,12 @@ def quiz_connect():
         if session is None:
             emit('sleep', room=token.token)
         else:
-            if session.current_question is not None:
-                print('emit current')
-                emit_question(session.current_question, disp)
             emit('meta_data',
                  {'display_name': token.name,
                   'teams': [{'id': t.team.id, 'name': t.team.name} for t in session.team_sessions]})
+            if session.current_question is not None:
+                print('emit current')
+                emit_question(session.current_question, disp)
             emit_state(token)
 
 

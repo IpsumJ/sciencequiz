@@ -83,14 +83,21 @@
                 }
                 var question = msg.question;
                 $('#question').html(question.question).attr("data-ques_id", question.id);
-                for (i = 0; i < 4; i++) {
-                    answer = question.answers[i];
+                for (var i = 0; i < 4; i++) {
+                    var answer = question.answers[i];
                     if (answer === undefined) {
                         break;
                     }
                     var elem = $('#' + 'abcd'[i]);
                     elem.find('.anstext').html(answer.answer);
                     elem.attr("data-ans_id", answer.id);
+                    if(team.id in msg.question.team_answers && msg.question.team_answers[team.id] == answer.id) {
+                        window.console.debug('c2');
+                        elem.find('ansletter').addClass('permahighlight');
+                        $(elem).children().each(function (i, k) {
+                            $(k).addClass("selected");
+                        });
+                    }
                 }
             });
             socket.on('sleep', function (msg) {
