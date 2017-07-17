@@ -586,6 +586,16 @@ def answer_selected(message):
             break
     if isinstance(session.current_question, QuestionChoose):
         # TODO! multiteam
+
+        # Check answer belongs to current_question
+        if not AnswerChoose.query.filter(AnswerChoose.question_id == session.current_question_id, AnswerChoose.id == ans).count():
+            raise RuntimeError("selected answer does not belong to current_question")
+
+        # Delete team answers of the same question in this session
+        sq = db.session.query(TeamAnswerChoose.id).filter(TeamAnswerChoose.team_session_id == ts.id).join(TeamAnswerChoose.answer).filter(AnswerChoose.question_id == session.current_question_id).subquery()
+        TeamAnswerChoose.query.filter(TeamAnswerChoose.id.in_(sq)).delete(synchronize_session = False)  # Watch out: objects not removed from session until next commit/rollback
+
+
         choose = TeamAnswerChoose(team_session=ts,
                                   answer_id=ans)
     elif isinstance(session.current_question, QuestionEstimate):
