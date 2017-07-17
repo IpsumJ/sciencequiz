@@ -117,7 +117,7 @@ def manage_sessions():
             session.current_question = None
             session.state = SessionState.pending
             db.session.commit()
-            emit_state()
+            emit_state(session.device_token)
         if action == 'run':
             if session.state == SessionState.finished:
                 abort(400, "Session already finished.")
@@ -126,7 +126,7 @@ def manage_sessions():
                 abort(400, "A session is already running in this room.")
             session.state = SessionState.paused
             db.session.commit()
-            emit_state()
+            emit_state(session.device_token)
         if action == 'close':
             if session.state == SessionState.closed:
                 abort(400, "Session already closed.")
@@ -134,7 +134,7 @@ def manage_sessions():
                 abort(400, "Session not running or finished.")
             session.state = SessionState.closed
             db.session.commit()
-            emit_state()
+            emit_state(session.device_token)
         redirect('/manage/sessions')
     return render_template('manage/sessions.html', sessions=Session.query.all())
 
@@ -429,7 +429,7 @@ def timer_task():
                     if time_running > time_total:
                         finish_session(session)
                         db.session.commit()
-                        emit_state()
+                        emit_state(session.device_token)
             except Exception as e:
                 print("Exception occurred in timer, please dont die...")
                 print(e)
@@ -454,27 +454,25 @@ def resume_timer(session):
         session.start_time = datetime.datetime.now()
 
 
-def emit_state():
-    disp = request.environ['beaker.session']['display']
-    token = DeviceToken.query.filter_by(token=disp.token).first()
+def emit_state(token):
     session = get_current_session_by_token(token)
     if session is None:
         emit('meta_data', {'display_name': token.name, 'team_names': []}, room=token.token, namespace="/quiz")
-        emit('sleep', {}, room=disp.token, namespace="/quiz")
+        emit('sleep', {}, room=token.token, namespace="/quiz")
         return
 
     emit('meta_data', {'display_name': token.name, 'team_names': [t.team.name for t in session.team_sessions]},
          namespace="/quiz")
 
     if session.state == SessionState.finished:
-        emit('wakeup', {}, room=disp.token, namespace="/quiz")
+        emit('wakeup', {}, room=token.token, namespace="/quiz")
         socketio.emit('finished', {'a': 'b', 'score': [t.score() for t in session.team_sessions]},
                       room=session.device_token.token, namespace="/quiz")
         return
     elif session.state == SessionState.paused:
-        emit('sleep', {}, room=disp.token, namespace="/quiz")
+        emit('sleep', {}, room=token.token, namespace="/quiz")
     elif session.state == SessionState.running:
-        emit('wakeup', {}, room=disp.token, namespace="/quiz")
+        emit('wakeup', {}, room=token.token, namespace="/quiz")
     else:
         print("This should not happen")
 
@@ -513,7 +511,7 @@ def quiz_connect():
                 print('emit current')
                 emit_question(session.current_question, disp)
             emit('meta_data', {'display_name': token.name, 'team_names': [t.team.name for t in session.team_sessions]})
-            emit_state()
+            emit_state(token)
 
 
 @socketio.on('disconnect', namespace='/quiz')
