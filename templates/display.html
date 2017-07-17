@@ -72,17 +72,22 @@
             });
             socket.on('question', function (msg) {
                 unselect();
-                $('#question').html(msg.question);
-                $('#a .anstext').html(msg.a);
-                $('#b .anstext').html(msg.b);
-                $('#c .anstext').html(msg.c);
-                $('#d .anstext').html(msg.d);
-                window.console.debug(msg.image);
-                if (msg.image != null) {
-                    window.console.debug(msg.image);
+                var question = msg.question;
+                $('#question').html(question.question).attr("data-ques_id", question.id);
+                for(i = 0; i < 4; i++) {
+                    answer = question.answers[i];
+                    if (answer === undefined) {
+                        break;
+                    }
+                    var elem = $('#' + 'abcd'[i]);
+                    elem.find('.anstext').html(answer.answer);
+                    elem.attr("data-ans_id", answer.id);
+                }
+                if (question.image != null) {
+                    window.console.debug(question.image);
                     $('#question_image').show();
                     $('#logo_head').hide();
-                    $('#question_image').attr('src', '/{{ upload_folder }}/' + msg.image);
+                    $('#question_image').attr('src', '/{{ upload_folder }}/' + question.image);
                 } else {
                     $('#question_image').hide();
                     $('#logo_head').show();
@@ -100,10 +105,12 @@
                 if (!running) {
                     running = true;
                     $('#full').addClass('hidden');
+                    $('#endcard').hide();
                 }
             });
             socket.on('selection', function (msg) {
-                $('#' + msg.selected).click();
+                var answer_id = msg.selected;
+                $("[data-ans_id=" + answer_id + "] .anstext").click();
             });
             socket.on('finished', function (msg) {
                 window.console.debug(msg);
@@ -116,34 +123,30 @@
             });
             socket.on('answer_response', function (msg) {
                 var corr = msg.correct;
-                if ($(".selected").parent().attr("id") != corr) {
+                if ($(".selected").parent().attr("data-ans_id") != corr) {
                     var ele = $(".selected").parent().find(".ansletter");
                     ele.removeClass();
                     ele.attr("class", "ansletter wrong");
-                    var eles = $("#" + corr).find(".ansletter");
+                    var eles = $("[data-ans_id=" + corr + "]").find(".ansletter");
                     eles.removeClass();
                     eles.attr("class", "ansletter correct");
                 } else {
-                    var eles = $("#" + corr).find(".ansletter");
+                    var eles = $("[data-ans_id=" + corr + "]").find(".ansletter");
                     eles.removeClass();
                     eles.attr("class", "ansletter correctchoise");
                 }
             });
 
             $(".answer").each(function (i, v) {
-                $(v).hover(function () {
-                    if (!selected)
-                        $(v).find('.ansletter').toggleClass("highlight");
-                });
                 $(v).on('click', function () {
                     if (!selected) {
                         $(v).find('.ansletter').addClass("permahighlight");
                         $(v).children().each(function (i, k) {
                             $(k).addClass("selected");
                         });
-                        socket.emit('answer_selected', {sel: $(v).context.id});
+                        socket.emit('answer_selected', {id: $(v).attr("data-ans_id")});
                         window.setTimeout(function () {
-                            socket.emit('answer_selected_result', {sel: $(v).context.id});
+                            socket.emit('answer_selected_result', {});
                         }, 1500);
 
                         selected = true;
