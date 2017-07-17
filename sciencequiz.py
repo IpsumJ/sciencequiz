@@ -654,9 +654,15 @@ def prev_q(message):
     emit_question(current, disp)
 
 
-@socketio.on('finish_quiz')
-def finish_quiz():
-    pass
+@socketio.on('finish_quiz', namespace='/quiz')
+def finish_quiz(message):
+    print("Finish quiz")
+    disp = request.environ['beaker.session']['display']
+    token = DeviceToken.query.filter_by(token=disp.token).first()
+    session = get_current_session_by_token(token)
+    finish_session(session)
+    db.session.commit()
+    emit_state(session.device_token)
 
 
 @socketio.on('cancel_quiz', namespace='/quiz')

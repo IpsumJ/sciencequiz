@@ -33,7 +33,9 @@
                                                                                                             id="pause_quiz">Quiz
         pausieren</a> <a href="#"
                          id="cancel_quiz">Quiz
-        abbrechen</a>
+        abbrechen</a> <a href="#"
+                         id="finish_quiz">Quiz
+        abschliessen</a>
     </div>
     <script type="text/javascript" src="/static/js/jquery.min.js"></script>
     <script type="text/javascript" src="/static/js/socket.io-1.4.5.js"></script>
@@ -157,6 +159,9 @@
                 socket.emit('cancel_quiz', {}, function() {
                     window.location = 'http://' + document.domain + ':' + location.port + '/manage/arrange';
                 });
+            });
+            $('#finish_quiz').on('click', function () {
+                socket.emit('finish_quiz', {});
             });
 
         });

@@ -93,6 +93,7 @@
                     running = false;
                     window.console.debug("Got sleep");
                     $('#full').removeClass('hidden');
+                    $('#endcard').hide();
                 }
             });
             socket.on('wakeup', function (msg) {
