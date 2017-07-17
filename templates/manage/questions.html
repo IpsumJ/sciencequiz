@@ -17,7 +17,7 @@
                             {% for quiz in q.quizzes %}
                                 <span class="label {% if quiz.public %}label-danger{% else %}label-default{% endif %}"><a
                                         href="/manage/arrange/{{ quiz.id }}">{{ quiz.name }}</a></span>{% endfor %}</td>
-                        <td>
+                        <td style="white-space: nowrap;">
                         <span class="pull-right">
                         <a class="btn btn-primary" href="/manage/question/{{ q.id }}/edit"><span
                                 class="glyphicon glyphicon-edit" aria-hidden="true"></span></a>
