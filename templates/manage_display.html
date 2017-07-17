@@ -67,10 +67,13 @@
                         break;
                 }
             });
-            var socket = io.connect(location.protocol+'//'+ document.domain + ':' + location.port + '/quiz');
+            var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/quiz');
 
             socket.on('meta_data', function (msg) {
                 $('#name').html(msg.display_name);
+                if (msg.teams.length > 0) {
+                    team = msg.teams[0];
+                }
             });
             socket.on('question', function (msg) {
                 unselect();
@@ -80,7 +83,7 @@
                 }
                 var question = msg.question;
                 $('#question').html(question.question).attr("data-ques_id", question.id);
-                for(i = 0; i < 4; i++) {
+                for (i = 0; i < 4; i++) {
                     answer = question.answers[i];
                     if (answer === undefined) {
                         break;
@@ -136,7 +139,7 @@
                         $(v).children().each(function (i, k) {
                             $(k).addClass("selected");
                         });
-                        socket.emit('answer_selected', {id: $(v).attr("data-ans_id")});
+                        socket.emit('answer_selected', {team_id: team.id, answer_id: $(v).attr("data-ans_id")});
                         window.setTimeout(function () {
                             socket.emit('answer_selected_result', {});
                         }, 1500);
@@ -163,7 +166,7 @@
             });
 
             $('#cancel_quiz').on('click', function () {
-                socket.emit('cancel_quiz', {}, function() {
+                socket.emit('cancel_quiz', {}, function () {
                     window.location = 'http://' + document.domain + ':' + location.port + '/manage/arrange';
                 });
             });

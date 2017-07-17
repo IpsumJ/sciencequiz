@@ -458,16 +458,16 @@ def resume_timer(session):
 def emit_state(token):
     session = get_current_session_by_token(token)
     if session is None:
-        socketio.emit('meta_data', {'display_name': token.name, 'team_names': []}, room=token.token, namespace="/quiz")
+        socketio.emit('meta_data', {'display_name': token.name, 'teams': []}, room=token.token, namespace="/quiz")
         socketio.emit('sleep', {}, room=token.token, namespace="/quiz")
         return
 
-    socketio.emit('meta_data', {'display_name': token.name, 'team_names': [t.team.name for t in session.team_sessions]},
+    socketio.emit('meta_data', {'display_name': token.name, 'teams': [{'id': t.team.id, 'name': t.team.name} for t in session.team_sessions]},
                   namespace="/quiz")
 
     if session.state == SessionState.finished:
         socketio.emit('wakeup', {}, room=token.token, namespace="/quiz")
-        socketio.emit('finished', {'a': 'b', 'score': [t.score() for t in session.team_sessions]},
+        socketio.emit('finished', {'score': [t.score() for t in session.team_sessions]},
                       room=session.device_token.token, namespace="/quiz")
         return
     elif session.state == SessionState.paused:
@@ -551,15 +551,22 @@ def answer_selected(message):
     disp = request.environ['beaker.session']['display']
     if not disp.w:
         return
-    ans = message['id']
+    ans = message['answer_id']
+    team = message['team_id']
     token = DeviceToken.query.filter_by(token=disp.token).first()
     session = get_current_session_by_token(token=token)
     pause_timer(session)
     db.session.commit()
     choose = None
+    team_sessions = session.team_sessions
+    ts = None
+    for t in team_sessions:
+        if t.team_id == team:
+            ts = t
+            break
     if isinstance(session.current_question, QuestionChoose):
         # TODO! multiteam
-        choose = TeamAnswerChoose(team_session=session.team_sessions[0],
+        choose = TeamAnswerChoose(team_session=ts,
                                   answer_id=ans)
     elif isinstance(session.current_question, QuestionEstimate):
         # TODO

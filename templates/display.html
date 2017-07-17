@@ -65,8 +65,9 @@
 
             socket.on('meta_data', function (msg) {
                 var disp = msg.display_name;
-                if (msg.team_names.length > 0) {
-                    disp += '<br/>' + msg.team_names[0];
+                if (msg.teams.length > 0) {
+                    disp += '<br/>' + msg.teams[0].name;
+                    team = msg.teams[0];
                 }
                 $('#name').html(disp);
             });
@@ -144,7 +145,7 @@
                         $(v).children().each(function (i, k) {
                             $(k).addClass("selected");
                         });
-                        socket.emit('answer_selected', {id: $(v).attr("data-ans_id")});
+                        socket.emit('answer_selected', {team_id: team.id, answer_id: $(v).attr("data-ans_id")});
                         window.setTimeout(function () {
                             socket.emit('answer_selected_result', {});
                         }, 1500);

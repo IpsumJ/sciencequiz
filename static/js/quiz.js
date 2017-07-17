@@ -1,5 +1,6 @@
 var running = false;
 var selected = false;
+var team = null;
 function unselect() {
     selected = false;
     $(".answer").each(function (i, v) {
