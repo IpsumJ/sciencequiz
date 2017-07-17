@@ -26,16 +26,14 @@
         </div>
     </div>
     <div id="controls">
-        Frage <span class="question_number"></span>/<span class="quiz_question_count"></span> Korrekte Lösung: <span
-            class="control_correct"></span> <a href="#"
+        Frage <span class="question_number"></span>/<span class="quiz_question_count"></span> | Korrekte Lösung: <span
+            class="control_correct"></span> | <a href="#"
                                                id="prev_question">Vorherige
-        Frage</a> <a href="#" id="next_question">Nächste Frage</a> Team: <span class="team_name"></span> <a href="#"
-                                                                                                            id="pause_quiz">Quiz
-        pausieren</a> <a href="#"
-                         id="cancel_quiz">Quiz
-        abbrechen</a> <a href="#"
-                         id="finish_quiz">Quiz
-        abschliessen</a>
+        Frage</a> <a href="#" id="next_question">Nächste Frage</a> | Team: <span class="team_name"></span> | 
+    <a href="#" id="pause_quiz">Quiz pausieren</a>
+    <a href="#" id="resume_quiz">Quiz fortsetzen</a> | 
+    <!--<a href="#" id="cancel_quiz">Quiz abbrechen</a>-->
+    <a href="#" id="finish_quiz">Quiz abschliessen</a>
     </div>
     <script type="text/javascript" src="/static/js/jquery.min.js"></script>
     <script type="text/javascript" src="/static/js/socket.io-1.4.5.js"></script>
@@ -103,13 +101,11 @@
             socket.on('sleep', function (msg) {
                 if (running) {
                     running = false;
-                    $('#pause_quiz').html("Quiz fortsetzen")
                 }
             });
             socket.on('wakeup', function (msg) {
                 if (!running) {
                     running = true;
-                    $('#pause_quiz').html("Quiz pausieren")
                 }
             });
             socket.on('selection', function (msg) {
@@ -165,11 +161,10 @@
             });
 
             $('#pause_quiz').on('click', function () {
-                if (running) {
-                    socket.emit('pause_quiz', {});
-                } else {
-                    socket.emit('resume_quiz', {});
-                }
+                socket.emit('pause_quiz', {});
+            });
+            $('#resume_quiz').on('click', function () {
+                socket.emit('resume_quiz', {});
             });
 
             $('#cancel_quiz').on('click', function () {

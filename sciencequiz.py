@@ -483,8 +483,9 @@ def pause_timer(session):
 
 
 def resume_timer(session):
-    if session.start_time is None:
-        session.start_time = datetime.datetime.now()
+    if session.state == SessionState.running:
+        if session.start_time is None:
+            session.start_time = datetime.datetime.now()
 
 
 def emit_state(token):
@@ -639,8 +640,8 @@ def resmue_quiz(message):
         return
     token = DeviceToken.query.filter_by(token=disp.token).first()
     session = get_current_session_by_token(token)
-    resume_timer(session)
     session.state = SessionState.running
+    resume_timer(session)
     db.session.commit()
     emit('wakeup', {}, room=disp.token)
 
