@@ -284,14 +284,22 @@ def edit_question(question):
             AnswerChoose.query.get(request.form['bid']).answer = request.form['ansB'].strip()
             AnswerChoose.query.get(request.form['cid']).answer = request.form['ansC'].strip()
             AnswerChoose.query.get(request.form['did']).answer = request.form['ansD'].strip()
-            image = handle_question_image()
-            if quest_obj.image_file_name is not None and image is None:
+            if 'delete_image' in request.form:
                 try:
                     os.unlink(os.path.join(app.config.get('UPLOAD_FOLDER'), quest_obj.image_file_name))
+                    quest_obj.image_file_name = None
                 except FileNotFoundError:
                     print('Could not delete image... strange.')
-            if image is not None:
-                quest_obj.image_file_name = image
+            else:
+                image = handle_question_image()
+                if quest_obj.image_file_name is not None and image is not None:
+                    try:
+                        os.unlink(os.path.join(app.config.get('UPLOAD_FOLDER'), quest_obj.image_file_name))
+                        quest_obj.image_file_name = None
+                    except FileNotFoundError:
+                        print('Could not delete image... strange.')
+                if image is not None:
+                    quest_obj.image_file_name = image
             db.session.commit()
         elif isinstance(quest_obj, QuestionEstimate):
             quest_obj.question = request.form['question']

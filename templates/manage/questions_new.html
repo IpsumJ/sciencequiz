@@ -18,7 +18,7 @@
                     </tr>
                     <tr>
                         <th><label>Bild</label></th>
-                        <td><input type="file" name="question_image"></td>
+                        <td><input type="file" name="question_image">{% if q and q.image_file_name%}<br/><label for="del_image">Bild löschen</label><input id="del_image" type="checkbox" name="delete_image">{% endif %}</td>
                         <td>{% if q and q.image_file_name %}<img class="image-preview" src="/media/{{ q.image_file_name }}"/>{% endif %}</td>
                     </tr>
                     <tr>
