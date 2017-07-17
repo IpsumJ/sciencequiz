@@ -517,6 +517,7 @@ def quiz_connect():
 @socketio.on('disconnect', namespace='/quiz')
 def quiz_disconnect():
     s = request.environ['beaker.session']['display']
+    leave_room(room=s.token)
     print('disconnect', s.token)
 
 
