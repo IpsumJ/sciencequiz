@@ -4,4 +4,24 @@
     Verwaltung
 {% endblock %}
 {% block body %}
+    <div class="jumbotron">
+  <div class="container">
+    <h2>Vorgehen beim Einpfelgen neuer Fragen</h2>
+      <ol>
+          <li><a href="{{ url_for('manage_categories') }}">Kategorien</a> erzeuegn</li>
+          <li><a href="{{ url_for('manage_questions') }}">Fragen</a> anlegen</li>
+          <li><a href="{{ url_for('manage_arrange') }}">Quizzes</a> anlegen</li>
+          <li>Fragen Quizzes <a href="{{ url_for('manage_questions') }}">zuordnen</a> ('+'-Schaltfläche)</li>
+      </ol>
+      <h2>Vorgehen beim Wettbewerb</h2>
+      <ol>
+          <li><a href="{{ url_for('manage_teams') }}">Teams</a> erzeuegn</li>
+          <li><a href="{{ url_for('manage_arrange_device_tokens') }}">Räume</a> anlegen</li>
+          <li><a href="{{ url_for('manage_sessions') }}">Sessions</a> anlegen</li>
+          <li>Sessions <a href="{{ url_for('manage_sessions') }}">starten</a></li>
+          <li>Belibig viele Displays zu den Sessions <a href="{{ url_for('manage_displays') }}">starten</a>. Diese können auch
+           im vorhinein gestertet werden und ohne die Displays neu zu öffnen beliebig oft bespielt werden (siehe <a href="{{ url_for('manage_arrange_device_tokens') }}">Raumübersicht</a>)</li>
+      </ol>
+  </div>
+</div>
 {% endblock %}
