@@ -8,7 +8,9 @@
             class="clearfix"></span></div>
     {% for t in teams %}
         <div class="panel panel-default">
-            <div class="panel-heading">{{ t.name }}</div>
+            <div class="panel-heading">
+                {{ t.name }}
+            </div>
             <table class="table">
                 {% for m in t.members %}
                     <tr>
@@ -16,6 +18,19 @@
                         <td>{{ m.display_name }}</td>
                     </tr>
                 {% endfor %}
+                <span class="pull-right">
+                    <form method="post" action="/manage/team/{{ t.id }}/edit">
+                        <a class="btn btn-primary" href="/manage/team/{{ t.id }}/edit"><span
+                                class="glyphicon glyphicon-edit"
+                                aria-hidden="true"></span>
+
+                        </a>
+                        <button class="btn btn-danger" name="delete"><span class="glyphicon glyphicon-trash"
+                                                                           aria-hidden="true"></span>
+
+                        </button>
+                    </form>
+                </span>
             </table>
         </div>
     {% endfor %}

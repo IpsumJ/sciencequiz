@@ -102,9 +102,26 @@ def manage_teams_new():
         db.session.add(t)
         db.session.commit()
         return redirect('/manage/teams')
-    cat = Category.query.all()
-    db.session.commit()
-    return render_template('manage/teams_new.html', categories=cat)
+    return render_template('manage/teams_new.html')
+
+@app.route('/manage/team/<team_id>/edit', methods=['GET', 'POST'])
+def manage_teams_edit(team_id):
+    t = Team.query.filter_by(id=team_id).first()
+    if request.method == 'POST':
+        if "delete" in request.form:
+            db.session.delete(t)
+            db.session.commit()
+        else:
+            if not request.form['name'].strip():
+                abort(400, "Team name may not be empty")
+            year = request.form['year'].strip()
+            if not year:
+                year = datetime.datetime.now().year
+            t.name=request.form['name'].strip()
+            t.year=year
+            db.session.commit()
+        return redirect('/manage/teams')
+    return render_template('manage/teams_new.html', t=t)
 
 
 @app.route('/manage/sessions', methods=['GET', 'POST'])
