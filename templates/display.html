@@ -72,10 +72,6 @@
             });
             socket.on('question', function (msg) {
                 unselect();
-                if (!running) {
-                    running = true;
-                    $('#full').addClass('hidden');
-                }
                 $('#question').html(msg.question);
                 $('#a .anstext').html(msg.a);
                 $('#b .anstext').html(msg.b);
