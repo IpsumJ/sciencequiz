@@ -5,6 +5,7 @@ from beaker.middleware import SessionMiddleware
 import uuid
 import time
 import os
+import traceback
 
 # TODO!!!: Error handling
 
@@ -666,6 +667,7 @@ def cancel_quiz(message):
 @app.errorhandler(Exception)
 def err_rollback(err):
     print("Rollback.")
+    traceback.print_exception(err)
     db.session.rollback()
     return 'An error occured.', 500
 
