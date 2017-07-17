@@ -277,7 +277,7 @@ def edit_question(question):
         if isinstance(quest_obj, QuestionChoose):
             correct = request.form['correct']
             quest_obj.question = request.form['question']
-            quest_obj.category = request.form['category'],
+            quest_obj.category_id = request.form['category'],
             quest_obj.correct_answer_id = quest_obj.answers[ord(correct) - 97].id
 
             AnswerChoose.query.get(request.form['aid']).answer = request.form['ansA'].strip()
@@ -295,7 +295,7 @@ def edit_question(question):
             db.session.commit()
         elif isinstance(quest_obj, QuestionEstimate):
             quest_obj.question = request.form['question']
-            quest_obj.category = request.form['category'],
+            quest_obj.category_id = request.form['category'],
             quest_obj.correct_value = float(request.form['correct_value'])
             db.session.commit()
         else:
