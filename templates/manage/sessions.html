@@ -43,7 +43,7 @@
                 {% elif s.state|string == 'SessionState.closed' %}
                     <span class="label label-success">Abgeschlossen</span>
                 {% endif %}
-
+                 <b>Zeit: {{ s.offset }}</b>
             </div>
             <table class="table">
                 <tr>
