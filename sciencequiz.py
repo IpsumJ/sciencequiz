@@ -465,8 +465,11 @@ def timer_task():
                         time_running = datetime.datetime.now() - session.start_time + session.offset
                     time_total = datetime.timedelta(minutes=15)
                     socketio.emit('timer', {'time_running': time_running.total_seconds(),
-                                            'time_total': time_total.total_seconds()}, room=session.device_token.token,
+                                            'time_total': time_total.total_seconds()},
+                                            room=session.device_token.token,
                                   namespace="/quiz")
+                    socketio.emit('update_score', {'score': [t.score() for t in session.team_sessions]},
+                                  room=session.device_token.token, namespace="/quiz")
                     if time_running > time_total:
                         finish_session(session)
                         db.session.commit()

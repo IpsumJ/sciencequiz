@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block body %}
     <h2 id="timer"></h2>
+    <h2 id="score_live"></h2>
     <div class="question_container">
         <p class="question" id="question">Loading...</p>
         <img id="question_image" class="display_image" src="">
@@ -128,6 +129,10 @@
             socket.on('timer', function (msg) {
                 var date = new Date((msg.time_total - msg.time_running) * 1000);
                 $('#timer').html(date.getMinutes()+':'+ (date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds()));
+                //$('#score_live').html(msg.score[0] + ' Punkt(e)');
+            });
+            socket.on('update_score', function (msg) {
+                $('#score_live').html(msg.score[0] + ' Punkt(e)');
             });
             socket.on('answer_response', function (msg) {
                 var corr = msg.correct;

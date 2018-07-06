@@ -233,6 +233,10 @@ body {
     color: #3A7734;
 }
 
+#score_live {
+    text-align: center;
+}
+
 #timer {
     text-align: center;
 }
