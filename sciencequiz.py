@@ -468,7 +468,11 @@ def timer_task():
                                             'time_total': time_total.total_seconds()},
                                             room=session.device_token.token,
                                   namespace="/quiz")
-                    socketio.emit('update_score', {'score': [t.score() for t in session.team_sessions]},
+                    question_count = len(session.quiz.questions)
+                    question_no = session.quiz.questions.index(session.current_question)
+                    socketio.emit('update_score', {'score': [t.score() for t in session.team_sessions],
+                                                   'question': question_no,
+                                                   'questions': question_count},
                                   room=session.device_token.token, namespace="/quiz")
                     if time_running > time_total:
                         finish_session(session)
