@@ -67,7 +67,12 @@
             socket.on('meta_data', function (msg) {
                 var disp = msg.display_name;
                 if (msg.teams.length > 0) {
-                    disp += '<br/>' + msg.teams[0].name;
+                    var team_names = [];
+                    for (i = 0; i < msg.teams.length; i++) {
+                        team_names.push(msg.teams[i].name);
+                    }
+                    disp += '<br/>' + team_names.join(', ');
+
                     team = msg.teams[0];
                 }
                 $('#name').html(disp);
@@ -122,8 +127,12 @@
                 $("[data-ans_id=" + answer_id + "] .anstext").click();
             });
             socket.on('finished', function (msg) {
-                window.console.debug(msg);
-                $('#score').html(msg.score[0] + ' Punkt(e)');
+                var txt = "";
+                var i;
+                for(i = 0; i < msg.score.length; i++) {
+                    txt += msg.team[i] + ': ' + msg.score[i] + ' ';
+                }
+                $('#score').html(txt + ' Punkt(e)');
                 $('#endcard').show();
             });
             socket.on('timer', function (msg) {
@@ -131,7 +140,12 @@
                 $('#timer').html(date.getMinutes()+':'+ (date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds()));
             });
             socket.on('update_score', function (msg) {
-                $('#score_live').html(msg.score[0] + ' Punkt(e) Frage ' + msg.question + '/' + msg.questions);
+                var txt = "";
+                var i;
+                for(i = 0; i < msg.score.length; i++) {
+                    txt += msg.team[i] + ': ' + msg.score[i] + ' ';
+                }
+                $('#score_live').html(txt + ' Punkt(e), Frage ' + msg.question + ' von ' + msg.questions);
             });
             socket.on('answer_response', function (msg) {
                 var corr = msg.correct;

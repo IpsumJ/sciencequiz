@@ -469,8 +469,9 @@ def timer_task():
                                             room=session.device_token.token,
                                   namespace="/quiz")
                     question_count = len(session.quiz.questions)
-                    question_no = session.quiz.questions.index(session.current_question)
+                    question_no = session.quiz.questions.index(session.current_question) + 1
                     socketio.emit('update_score', {'score': [t.score() for t in session.team_sessions],
+                                                   'team' : [t.team.name for t in session.team_sessions],
                                                    'question': question_no,
                                                    'questions': question_count},
                                   room=session.device_token.token, namespace="/quiz")
@@ -516,7 +517,8 @@ def emit_state(token):
 
     if session.state == SessionState.finished:
         socketio.emit('wakeup', {}, room=token.token, namespace="/quiz")
-        socketio.emit('finished', {'score': [t.score() for t in session.team_sessions]},
+        socketio.emit('finished', {'score': [t.score() for t in session.team_sessions],
+                      'team' : [t.team.name for t in session.team_sessions]},
                       room=session.device_token.token, namespace="/quiz")
         return
     elif session.state == SessionState.paused:
