@@ -132,7 +132,10 @@
                 for(i = 0; i < msg.score.length; i++) {
                     txt += msg.team[i] + ': ' + msg.score[i] + ' ';
                 }
-                $('#score').html(txt + ' Punkt(e)');
+                console.log(msg);
+                var date = new Date(msg.time * 1000);
+                var time_str = date.getMinutes()+':'+ (date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds());
+                $('#score').html(txt + ' Punkt(e), Zeit: ' + time_str);
                 $('#endcard').show();
             });
             socket.on('timer', function (msg) {

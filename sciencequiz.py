@@ -517,8 +517,10 @@ def emit_state(token):
 
     if session.state == SessionState.finished:
         socketio.emit('wakeup', {}, room=token.token, namespace="/quiz")
+        print(session.offset)
         socketio.emit('finished', {'score': [t.score() for t in session.team_sessions],
-                      'team' : [t.team.name for t in session.team_sessions]},
+                      'team' : [t.team.name for t in session.team_sessions],
+                      'time' : session.offset.total_seconds()},
                       room=session.device_token.token, namespace="/quiz")
         return
     elif session.state == SessionState.paused:
