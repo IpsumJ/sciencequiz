@@ -686,6 +686,8 @@ def next_q(message):
                 eq = True
         if current is None:
             print('TODO quiz is finished')
+            pause_timer(session)
+            db.session.commit()
             return
     session.current_question = current
     db.session.commit()
