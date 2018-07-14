@@ -230,10 +230,12 @@ body {
     margin: 0;
 }
 .centered #logo {
-    margin-left: 60px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 #score {
+    text-align: center;
     color: #3A7734;
 }
 
@@ -247,13 +249,14 @@ body {
 
 .centered{
     height: 200px;
-    left: 50%;
-    margin-left: -233px;
+/*    left: 50%;*/
+/*    margin-left: -233px;
     margin-top: -190px;
     padding: 25px;
+    */
     position: absolute;
-    top: 30%;
-    width:400px;
+    /*top: 30%; */
+    width:100%;
     text-align:center;
     font-size: 30pt;
 }
