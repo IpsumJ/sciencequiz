@@ -470,11 +470,9 @@ def timer_task():
                                   namespace="/quiz")
                     question_count = len(session.quiz.questions)
                     question_no = session.quiz.questions.index(session.current_question) + 1
-                    socketio.emit('update_score', {'score': [t.score() for t in session.team_sessions],
-                                                   'team' : [t.team.name for t in session.team_sessions],
-                                                   'question': question_no,
+                    socketio.emit('update_qcount', {'question': question_no,
                                                    'questions': question_count},
-                                  room=session.device_token.token, namespace="/quiz")
+                                                   room=session.device_token.token, namespace="/quiz")
                     if time_running > time_total:
                         finish_session(session)
                         db.session.commit()
@@ -593,9 +591,13 @@ def answer_selected_result(message):
     if not disp.w:
         return
     token = DeviceToken.query.filter_by(token=disp.token).first()
-    quest = get_current_session_by_token(token).current_question
+    session = get_current_session_by_token(token)
+    quest = session.current_question
     if isinstance(quest, QuestionChoose):
         emit('answer_response', {'correct': quest.correct_answer_id}, room=disp.token)
+        socketio.emit('update_score', {'score': [t.score() for t in session.team_sessions],
+            'team' : [t.team.name for t in session.team_sessions]},
+            room=session.device_token.token, namespace="/quiz")
 
 
 # TODO!
@@ -663,6 +665,9 @@ def resmue_quiz(message):
     resume_timer(session)
     db.session.commit()
     emit('wakeup', {}, room=disp.token)
+    socketio.emit('update_score', {'score': [t.score() for t in session.team_sessions],
+        'team' : [t.team.name for t in session.team_sessions]},
+        room=session.device_token.token, namespace="/quiz")
 
 
 @socketio.on('next_question', namespace='/quiz')

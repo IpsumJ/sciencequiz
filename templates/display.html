@@ -2,6 +2,7 @@
 {% block body %}
     <h2 id="timer"></h2>
     <h2 id="score_live"></h2>
+    <h2 id="qcount"></h2>
     <div class="question_container">
         <p class="question" id="question">Loading...</p>
         <img id="question_image" class="display_image" src="">
@@ -145,13 +146,16 @@
                 var date = new Date((msg.time_total - msg.time_running) * 1000);
                 $('#timer').html(date.getMinutes()+':'+ (date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds()));
             });
+            socket.on('update_qcount', function (msg) {
+                $('#qcount').html('Frage ' + msg.question + ' von ' + msg.questions);
+            });
             socket.on('update_score', function (msg) {
                 var txt = "";
                 var i;
                 for(i = 0; i < msg.score.length; i++) {
                     txt += msg.team[i] + ': ' + msg.score[i] + ' ';
                 }
-                $('#score_live').html(txt + ' Punkt(e), Frage ' + msg.question + ' von ' + msg.questions);
+                $('#score_live').html(txt + ' Punkt(e)');
             });
             socket.on('answer_response', function (msg) {
                 var corr = msg.correct;
