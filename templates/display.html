@@ -66,6 +66,7 @@
 
             socket.on('meta_data', function (msg) {
                 var disp = msg.display_name;
+                disp += ' ' + msg.quiz
                 if (msg.teams.length > 0) {
                     var team_names = [];
                     for (i = 0; i < msg.teams.length; i++) {
@@ -102,9 +103,11 @@
                     $('#question_image').show();
                     $('#logo_head').hide();
                     $('#question_image').attr('src', '/media/' + question.image);
+                    $('#question').addClass('question_w_image');
                 } else {
                     $('#question_image').hide();
                     $('#logo_head').show();
+                    $('#question').removeClass('question_w_image');
                 }
             });
             socket.on('sleep', function (msg) {

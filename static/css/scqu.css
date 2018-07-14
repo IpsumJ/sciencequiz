@@ -152,6 +152,10 @@ body {
     margin-bottom: 45px;
     float: left;
 }
+.question_w_image {
+    width: 40%;
+}
+
 .question_container:after {
         clear: right;
 }
@@ -264,7 +268,8 @@ body {
 }
 
 .display_image {
-    max-width: 300px;
+    /*max-width: 300px;*/
+    width: 60%;
     height: auto;
     float: right;
 }

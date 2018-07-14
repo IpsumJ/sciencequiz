@@ -507,11 +507,11 @@ def resume_timer(session):
 def emit_state(token):
     session = get_current_session_by_token(token)
     if session is None:
-        socketio.emit('meta_data', {'display_name': token.name, 'teams': []}, room=token.token, namespace="/quiz")
+        socketio.emit('meta_data', {'display_name': token.name, 'quiz': '', 'teams': []}, room=token.token, namespace="/quiz")
         socketio.emit('sleep', {}, room=token.token, namespace="/quiz")
         return
 
-    socketio.emit('meta_data', {'display_name': token.name,
+    socketio.emit('meta_data', {'display_name': token.name, 'quiz': session.quiz.name,
                                 'teams': [{'id': t.team.id, 'name': t.team.name} for t in session.team_sessions]},
                   namespace="/quiz")
 
@@ -566,13 +566,13 @@ def quiz_connect():
         token = DeviceToken.query.filter_by(token=disp.token).first()
         join_room(token.token)
         session = get_current_session_by_token(token)
-        emit('meta_data', {'display_name': token.name, 'teams': []}, room=token.token)
+        emit('meta_data', {'display_name': token.name, 'quiz': '', 'teams': []}, room=token.token)
         if session is None:
             emit('sleep', room=token.token)
         else:
             emit('meta_data',
-                 {'display_name': token.name,
-                  'teams': [{'id': t.team.id, 'name': t.team.name} for t in session.team_sessions]})
+                    {'display_name': token.name, 'quiz': session.quiz.name,
+                        'teams': [{'id': t.team.id, 'name': t.team.name} for t in session.team_sessions]})
             if session.current_question is not None:
                 print('emit current')
                 emit_question(session.current_question, disp)
