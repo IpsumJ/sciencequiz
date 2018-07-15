@@ -140,8 +140,10 @@
                     txt += msg.team[i] + ': ' + msg.score[i] + ' ';
                 }
                 console.log(msg);
-                var date = new Date(msg.time * 1000);
-                var time_str = date.getMinutes()+':'+ (date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds());
+                var tdiff = msg.time;
+                var min = Math.floor(tdiff / 60);
+                var sec = Math.ceil(tdiff % 60);
+                var time_str = min+':'+ (sec < 10 ? '0' + sec : sec);
                 txt += ' Punkt(e)';
                 if (msg.team.length == 1) {
                     txt += ', Zeit: ' + time_str;
@@ -150,9 +152,10 @@
                 $('#endcard').show();
             });
             socket.on('timer', function (msg) {
-                var tdiff = msg.time_total - msg.time_running
-                var date = new Date((tdiff > 0? tdiff : 0) * 1000);
-                $('#timer').html(date.getMinutes()+':'+ (date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds()));
+                var tdiff = Math.max(msg.time_total - msg.time_running, 0);
+                var min = Math.floor(tdiff / 60);
+                var sec = Math.ceil(tdiff % 60);
+                $('#timer').html(min+':'+ (sec < 10 ? '0' + sec : sec));
             });
             socket.on('update_qcount', function (msg) {
                 $('#qcount').html('Frage ' + msg.question + ' von ' + msg.questions);

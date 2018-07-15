@@ -458,15 +458,12 @@ def timer_task():
                 Session.state == SessionState.running).all()
         for session in sessions:
             try:
-                print(session)
                 if session.device_token is not None:
                     question_count = len(session.quiz.questions)
                     question_no = session.quiz.questions.index(session.current_question) + 1
                     socketio.emit('update_qcount', {'question': question_no,
                                                    'questions': question_count},
                                                    room=session.device_token.token, namespace="/quiz")
-                    print("sessino is: ");
-                    print(session.timer_state);
                     if session.isfinal() and session.timer_state != FinalTimerState.running:
                         continue
                     time_running = None
@@ -477,8 +474,6 @@ def timer_task():
                     time_total = datetime.timedelta(minutes=13)
                     if session.isfinal():
                         time_total = datetime.timedelta(seconds=10)
-                    print("emiting timer state")
-                    print(time_running.total_seconds());
                     socketio.emit('timer', {'time_running': time_running.total_seconds(),
                                             'time_total': time_total.total_seconds()},
                                             room=session.device_token.token,
@@ -498,7 +493,8 @@ def timer_task():
                 traceback.print_exc()
         db.session.rollback()  # Needed to include newer commits in result
 
-        time.sleep(0.5)
+        #time.sleep(0.1)
+        socketio.sleep(0.1)
 
 
 def finish_session(session):
@@ -531,7 +527,6 @@ def emit_state(token):
 
     if session.state == SessionState.finished:
         socketio.emit('wakeup', {}, room=token.token, namespace="/quiz")
-        print(session.offset)
         socketio.emit('finished', {'score': [t.score() for t in session.team_sessions],
                       'team' : [t.team.name for t in session.team_sessions],
                       'time' : session.offset.total_seconds()},
@@ -832,4 +827,5 @@ def err_rollback(err):
 
 
 if __name__ == '__main__':
-    app.run(host=app.config.get('HOST'), port=app.config.get('PORT'), threaded=True)
+    #app.run(host=app.config.get('HOST'), port=app.config.get('PORT'), threaded=True)
+    socketio.run(app, host=app.config.get('HOST'), port=app.config.get('PORT'))

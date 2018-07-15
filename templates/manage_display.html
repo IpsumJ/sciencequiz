@@ -120,7 +120,7 @@
                     if (answer === undefined) {
                         break;
                     }
-                    for (var tn = 0; tn < 4; tn++) {
+                    for (var tn = 0; tn < Math.min(4, teams.length); tn++) {
                         var elem = $('#' + 'abcd'[i] + 't' + tn);
                         elem.find('.anstext').html(answer.answer);
                         elem.attr("data-ans_id", answer.id);

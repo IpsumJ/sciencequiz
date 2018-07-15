@@ -12,3 +12,7 @@ six>=1.10.0
 Werkzeug>=0.12.2
 SQLAlchemy>=1.1.11
 Flask-SQLAlchemy==2.1
+
+
+Flask-uWSGI-WebSocket
+gevent-websocket
