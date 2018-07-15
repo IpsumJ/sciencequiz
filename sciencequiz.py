@@ -170,7 +170,8 @@ def manage_sessions():
 def manage_sessions_new():
     if request.method == 'POST':
         s = Session(quiz_id=request.form['quiz'], state=SessionState.pending,
-                    device_token_id=request.form['device_token'])
+                    device_token_id=request.form['device_token'],
+                    timer_state=FinalTimerState.waiting)
         db.session.add(s)
         num_teams = 0
         for i in range(4):
@@ -454,9 +455,11 @@ def display():
 def timer_task():
     while True:
         sessions = Session.query.options(db.joinedload(Session.device_token)).filter(
-            Session.state == SessionState.running).all()
+                Session.state == SessionState.running).all()
         for session in sessions:
             try:
+                if session.isfinal() and session.time_running != FinalTimerState.running:
+                    continue
                 if session.device_token is not None:
                     time_running = None
                     if session.start_time is None:
@@ -464,6 +467,8 @@ def timer_task():
                     else:
                         time_running = datetime.datetime.now() - session.start_time + session.offset
                     time_total = datetime.timedelta(minutes=15)
+                    if session.isfinal():
+                        time_running = datetime.timedelta(seconds=10)
                     socketio.emit('timer', {'time_running': time_running.total_seconds(),
                                             'time_total': time_total.total_seconds()},
                                             room=session.device_token.token,
@@ -474,9 +479,14 @@ def timer_task():
                                                    'questions': question_count},
                                                    room=session.device_token.token, namespace="/quiz")
                     if time_running > time_total:
-                        finish_session(session)
-                        db.session.commit()
-                        emit_state(session.device_token)
+                        if session.isfinal():
+                            session.timer_state = FinalTimerState.finished
+                            db.session.commit();
+                        else:
+                            finish_session(session)
+                            db.session.commit()
+                            emit_state(session.device_token)
+
             except Exception as e:
                 print("Exception occurred in timer, please dont die...")
                 print(e)
@@ -662,7 +672,8 @@ def resmue_quiz(message):
     token = DeviceToken.query.filter_by(token=disp.token).first()
     session = get_current_session_by_token(token)
     session.state = SessionState.running
-    resume_timer(session)
+    if (not session.isfinal()) or session.timer_state == FinalTimerState.running:
+        resume_timer(session)
     db.session.commit()
     emit('wakeup', {}, room=disp.token)
     socketio.emit('update_score', {'score': [t.score() for t in session.team_sessions],
@@ -675,7 +686,10 @@ def next_q(message):
     disp = request.environ['beaker.session']['display']
     token = DeviceToken.query.filter_by(token=disp.token).first()
     session = get_current_session_by_token(token)
-    resume_timer(session)
+    if session.isfinal():
+        session.timer_state = FinalTimerState.waiting
+    else:
+        resume_timer(session)
     db.session.commit()
     quiz = session.quiz
     qs = quiz.questions
@@ -707,7 +721,10 @@ def prev_q(message):
     disp = request.environ['beaker.session']['display']
     token = DeviceToken.query.filter_by(token=disp.token).first()
     session = get_current_session_by_token(token)
-    resume_timer(session)
+    if session.isfinal():
+        session.timer_state = FinalTimerState.waiting
+    else:
+        resume_timer(session)
     db.session.commit()
     quiz = session.quiz
     qs = quiz.questions

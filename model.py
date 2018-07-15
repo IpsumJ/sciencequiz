@@ -112,6 +112,11 @@ class SessionState(enum.Enum):
     finished = 4
     closed = 5
 
+class FinalTimerState(enum.Enum):
+    waiting = 1
+    running = 2
+    finished = 3
+
 
 class Session(db.Model):
     __tablename__ = 'sessions'
@@ -126,6 +131,7 @@ class Session(db.Model):
     current_question = db.relationship('Question')
     start_time = db.Column(db.DateTime, nullable=True)  # Quiz is temporarily paused if start_time is NULL
     offset = db.Column(db.Interval, nullable=False, default=datetime.timedelta())
+    timer_state = db.Column(db.Enum(FinalTimerState), nullable=False);
 
     @classmethod
     def on_display(cls):
@@ -133,6 +139,8 @@ class Session(db.Model):
         Whether the session should currently be displayed in its room
         '''
         return db.or_(cls.state == SessionState.running, cls.state == SessionState.finished, cls.state == SessionState.paused)
+    def isfinal(self):
+        return len(self.team_sessions) == 4
 
 
 class TeamSession(db.Model):

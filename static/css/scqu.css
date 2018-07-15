@@ -239,15 +239,7 @@ body {
     color: #3A7734;
 }
 
-#score_live {
-    text-align: center;
-}
-
-#qcount {
-    text-align: center;
-}
-
-#timer {
+#info_header {
     text-align: center;
 }
 
