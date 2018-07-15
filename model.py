@@ -158,7 +158,10 @@ class TeamSession(db.Model):
             if isinstance(answer, TeamAnswerChoose):
                 answer_choose = answer.answer
                 if answer_choose.question.correct_answer_id == answer_choose.id:
-                    result += 1.0
+                    if answer.answer_type == AnswerType.normal:
+                        result += 1.0
+                    elif answer.answer_type == AnswerType.final_first:
+                        result += 2.0
             elif isinstance(answer, TeamAnswerEstimate):
                 correct_estimate = answer.question.correct_value
                 other_estimates = TeamAnswerEstimate.query.join(TeamAnswerEstimate.team_session).filter(
@@ -168,6 +171,7 @@ class TeamSession(db.Model):
                                   ).options(db.load_only("estimate")).all()
                 other_estimate_dists = [abs(x.estimate - correct_estimate) for x in other_estimates]
                 my_estimate_dist = abs(answer.estimate - correct_estimate)
+                # TODO implement answer type
                 if len(other_estimate_dists) == 0:
                     result += 1.0
                 else:
@@ -178,12 +182,16 @@ class TeamSession(db.Model):
                 print("WAT?")
         return result
 
+class AnswerType(enum.Enum):
+    normal = 1
+    final_first = 2
 
 class TeamAnswer(db.Model):
     __tablename__ = 'team_answers'
     id = db.Column(db.Integer, primary_key=True)
     team_session_id = db.Column(db.ForeignKey('team_sessions.id'), nullable=False)
     team_session = db.relationship("TeamSession")
+    answer_type = db.Column(db.Enum(AnswerType), nullable=False);
     type = db.Column(db.Enum(QuestionType))
     __mapper_args__ = {
         'polymorphic_on': type

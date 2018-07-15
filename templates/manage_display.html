@@ -2,34 +2,67 @@
 {% block body %}
     <p class="question" id="question">Loading...</p>
     <div class="answerbox">
-        <div id="a" class="answer">
-            <div class="ansletter">A</div>
-            <div class="anstext">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor
-                invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo
-                dolores et ea rebum. Stet clita kasd gubergren,
-            </div>
+        <div id="at0" class="answer adminans">
+            <div class="ansletter adminansletter">A</div>
         </div>
-        <div id="b" class="answer">
-            <div class="ansletter">B</div>
-            <div class="anstext">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam</div>
+        <div id="bt0" class="answer adminans">
+            <div class="ansletter adminansletter">B</div>
         </div>
-        <div id="c" class="answer">
-            <div class="ansletter">C</div>
-            <div class="anstext">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor
-                invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo
-                dolores et ea rebum. Stet clita kasd gubergren,
-            </div>
+        <div id="ct0" class="answer adminans">
+            <div class="ansletter adminansletter">C</div>
         </div>
-        <div id="d" class="answer">
-            <div class="ansletter">D</div>
-            <div class="anstext">Lorem ipsum</div>
+        <div id="dt0" class="answer adminans">
+            <div class="ansletter adminansletter">D</div>
+        </div>
+    </div>
+    <div class="answerbox">
+        <div id="at1" class="answer adminans">
+            <div class="ansletter adminansletter">A</div>
+        </div>
+        <div id="bt1" class="answer adminans">
+            <div class="ansletter adminansletter">B</div>
+        </div>
+        <div id="ct1" class="answer adminans">
+            <div class="ansletter adminansletter">C</div>
+        </div>
+        <div id="dt1" class="answer adminans">
+            <div class="ansletter adminansletter">D</div>
+        </div>
+    </div>
+    <div class="answerbox">
+        <div id="at2" class="answer adminans">
+            <div class="ansletter adminansletter">A</div>
+        </div>
+        <div id="bt2" class="answer adminans">
+            <div class="ansletter adminansletter">B</div>
+        </div>
+        <div id="ct2" class="answer adminans">
+            <div class="ansletter adminansletter">C</div>
+        </div>
+        <div id="dt2" class="answer adminans">
+            <div class="ansletter adminansletter">D</div>
+        </div>
+    </div>
+    <div class="answerbox">
+        <div id="at3" class="answer adminans">
+            <div class="ansletter adminansletter">A</div>
+        </div>
+        <div id="bt3" class="answer adminans">
+            <div class="ansletter adminansletter">B</div>
+        </div>
+        <div id="ct3" class="answer adminans">
+            <div class="ansletter adminansletter">C</div>
+        </div>
+        <div id="dt3" class="answer adminans">
+            <div class="ansletter adminansletter">D</div>
         </div>
     </div>
     <div id="controls">
         Frage <span class="question_number"></span>/<span class="quiz_question_count"></span> | Korrekte Lösung: <span
             class="control_correct"></span> | <a href="#"
                                                id="prev_question">Vorherige
-        Frage</a> <a href="#" id="next_question">Nächste Frage</a> | Team: <span class="team_name"></span> | 
+        Frage</a> <a href="#" id="open_answer">Antworten Aufdecken (Finale)</a> 
+    <a href="#" id="next_question">Nächste Frage</a> | Team: <span class="team_name"></span> | 
     <a href="#" id="pause_quiz">Quiz pausieren</a>
     <a href="#" id="resume_quiz">Quiz fortsetzen</a> | 
     <!--<a href="#" id="cancel_quiz">Quiz abbrechen</a>-->
@@ -71,6 +104,7 @@
                 $('#name').html(msg.display_name);
                 if (msg.teams.length > 0) {
                     team = msg.teams[0];
+                    teams = msg.teams;
                 }
             });
             socket.on('question', function (msg) {
@@ -86,15 +120,18 @@
                     if (answer === undefined) {
                         break;
                     }
-                    var elem = $('#' + 'abcd'[i]);
-                    elem.find('.anstext').html(answer.answer);
-                    elem.attr("data-ans_id", answer.id);
-                    if(team.id in msg.question.team_answers && msg.question.team_answers[team.id] == answer.id) {
-                        window.console.debug('c2');
-                        elem.find('ansletter').addClass('permahighlight');
-                        $(elem).children().each(function (i, k) {
-                            $(k).addClass("selected");
-                        });
+                    for (var tn = 0; tn < 4; tn++) {
+                        var elem = $('#' + 'abcd'[i] + 't' + tn);
+                        elem.find('.anstext').html(answer.answer);
+                        elem.attr("data-ans_id", answer.id);
+                        elem.attr("data-team_id", teams[tn].id);
+                        if(teams[tn].id in msg.question.team_answers && msg.question.team_answers[teams[tn].id] == answer.id) {
+                            window.console.debug('c2');
+                            elem.find('ansletter').addClass('permahighlight');
+                            $(elem).children().each(function (i, k) {
+                                $(k).addClass("selected");
+                            });
+                        }
                     }
                 }
             });
@@ -117,14 +154,14 @@
                 if ($(".selected").parent().attr("data-ans_id") != corr) {
                     var ele = $(".selected").parent().find(".ansletter");
                     ele.removeClass();
-                    ele.attr("class", "ansletter wrong");
+                    ele.attr("class", "ansletter adminansletter wrong");
                     var eles = $("[data-ans_id=" + corr + "]").find(".ansletter");
                     eles.removeClass();
-                    eles.attr("class", "ansletter correct");
+                    eles.attr("class", "ansletter adminansletter correct");
                 } else {
                     var eles = $("[data-ans_id=" + corr + "]").find(".ansletter");
                     eles.removeClass();
-                    eles.attr("class", "ansletter correctchoise");
+                    eles.attr("class", "ansletter adminansletter correctchoise");
                 }
             });
 
@@ -137,15 +174,15 @@
 
             $(".answer").each(function (i, v) {
                 $(v).on('click', function () {
-                    if (!selected) {
+                    if (!selected || teams.length == 4) {
                         $(".selected").removeClass("selected");
                         $(v).find('.ansletter').addClass("permahighlight");
                         $(v).children().each(function (i, k) {
                             $(k).addClass("selected");
                         });
-                        socket.emit('answer_selected', {team_id: team.id, answer_id: $(v).attr("data-ans_id")});
+                        socket.emit('answer_selected', {team_id: $(v).attr("data-team_id"), answer_id: $(v).attr("data-ans_id")});
                         window.setTimeout(function () {
-                            socket.emit('answer_selected_result', {});
+                            socket.emit('answer_selected_result', {'mode': 'auto'});
                         }, 1500);
 
                         selected = true;
@@ -157,9 +194,18 @@
                 socket.emit('next_question', {});
             });
 
+            $('#open_answer').on('click', function () {
+                socket.emit('answer_selected_result', {'mode': 'manual'});
+            });
+
             $('#prev_question').on('click', function () {
                 socket.emit('prev_question', {});
             });
+
+            $('#prev_question').on('click', function () {
+                socket.emit('prev_question', {});
+            });
+
 
             $('#pause_quiz').on('click', function () {
                 socket.emit('pause_quiz', {});

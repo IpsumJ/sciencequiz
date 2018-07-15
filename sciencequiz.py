@@ -458,9 +458,17 @@ def timer_task():
                 Session.state == SessionState.running).all()
         for session in sessions:
             try:
-                if session.isfinal() and session.time_running != FinalTimerState.running:
-                    continue
+                print(session)
                 if session.device_token is not None:
+                    question_count = len(session.quiz.questions)
+                    question_no = session.quiz.questions.index(session.current_question) + 1
+                    socketio.emit('update_qcount', {'question': question_no,
+                                                   'questions': question_count},
+                                                   room=session.device_token.token, namespace="/quiz")
+                    print("sessino is: ");
+                    print(session.timer_state);
+                    if session.isfinal() and session.timer_state != FinalTimerState.running:
+                        continue
                     time_running = None
                     if session.start_time is None:
                         time_running = session.offset
@@ -468,17 +476,14 @@ def timer_task():
                         time_running = datetime.datetime.now() - session.start_time + session.offset
                     time_total = datetime.timedelta(minutes=13)
                     if session.isfinal():
-                        time_running = datetime.timedelta(seconds=10)
+                        time_total = datetime.timedelta(seconds=10)
+                    print("emiting timer state")
+                    print(time_running.total_seconds());
                     socketio.emit('timer', {'time_running': time_running.total_seconds(),
                                             'time_total': time_total.total_seconds()},
                                             room=session.device_token.token,
                                   namespace="/quiz")
-                    question_count = len(session.quiz.questions)
-                    question_no = session.quiz.questions.index(session.current_question) + 1
-                    socketio.emit('update_qcount', {'question': question_no,
-                                                   'questions': question_count},
-                                                   room=session.device_token.token, namespace="/quiz")
-                    if time_running > time_total:
+                    if time_running >= time_total:
                         if session.isfinal():
                             session.timer_state = FinalTimerState.finished
                             db.session.commit();
@@ -490,6 +495,7 @@ def timer_task():
             except Exception as e:
                 print("Exception occurred in timer, please dont die...")
                 print(e)
+                traceback.print_exc()
         db.session.rollback()  # Needed to include newer commits in result
 
         time.sleep(0.5)
@@ -603,11 +609,46 @@ def answer_selected_result(message):
     token = DeviceToken.query.filter_by(token=disp.token).first()
     session = get_current_session_by_token(token)
     quest = session.current_question
-    if isinstance(quest, QuestionChoose):
+    if isinstance(quest, QuestionChoose) and (message['mode'] == "manual" or not session.isfinal()):
         emit('answer_response', {'correct': quest.correct_answer_id}, room=disp.token)
         socketio.emit('update_score', {'score': [t.score() for t in session.team_sessions],
             'team' : [t.team.name for t in session.team_sessions]},
             room=session.device_token.token, namespace="/quiz")
+
+
+@socketio.on('buzzer_connect', namespace='/quiz')
+def buzzer_connect(message):
+    join_room(message['token'])
+
+@socketio.on('buzzer_pressed', namespace='/quiz')
+def buzzer_pressed(message):
+    token = message['token']
+    token = DeviceToken.query.filter_by(token=token).first()
+    session = get_current_session_by_token(token=token)
+    if not session.isfinal():
+        # buzzers are only valid for the final
+        return
+    ts = session.team_sessions[int(message['team'])]
+    choose = None
+    if isinstance(session.current_question, QuestionChoose):
+        sq = db.session.query(TeamAnswerChoose.id).filter(TeamAnswerChoose.team_session_id == ts.id).join(TeamAnswerChoose.answer).filter(AnswerChoose.question_id == session.current_question_id).all()
+        if len(sq) > 0:
+            #not the first answer of the team
+            return
+        ans = session.current_question.answers[int(message['answer'])].id
+        if session.timer_state == FinalTimerState.waiting:
+            session.timer_state = FinalTimerState.running
+            choose = TeamAnswerChoose(team_session=ts,
+                    answer_id=ans, answer_type=AnswerType.final_first)
+            session.offset = datetime.timedelta()
+            session.start_time = None
+            resume_timer(session);
+        elif session.timer_state == FinalTimerState.running:
+            choose = TeamAnswerChoose(team_session=ts,
+                    answer_id=ans, answer_type=AnswerType.normal)
+        if choose is not None:
+            db.session.add(choose)
+        db.session.commit()
 
 
 # TODO!
@@ -617,10 +658,11 @@ def answer_selected(message):
     if not disp.w:
         return
     ans = message['answer_id']
-    team = message['team_id']
+    team = int(message['team_id'])
     token = DeviceToken.query.filter_by(token=disp.token).first()
     session = get_current_session_by_token(token=token)
-    pause_timer(session)
+    if not session.isfinal():
+        pause_timer(session)
     db.session.commit()
     choose = None
     team_sessions = session.team_sessions
@@ -641,14 +683,28 @@ def answer_selected(message):
         TeamAnswerChoose.query.filter(TeamAnswerChoose.id.in_(sq)).delete(synchronize_session = False)  # Watch out: objects not removed from session until next commit/rollback
 
 
-        choose = TeamAnswerChoose(team_session=ts,
-                                  answer_id=ans)
+        if session.isfinal():
+            if session.timer_state == FinalTimerState.waiting:
+                session.timer_state = FinalTimerState.running
+                choose = TeamAnswerChoose(team_session=ts,
+                        answer_id=ans, answer_type=AnswerType.final_first)
+                session.offset = datetime.timedelta()
+                session.start_time = None
+                resume_timer(session);
+            elif session.timer_state == FinalTimerState.running:
+                choose = TeamAnswerChoose(team_session=ts,
+                        answer_id=ans, answer_type=AnswerType.normal)
+        else:
+            choose = TeamAnswerChoose(team_session=ts,
+                    answer_id=ans, answer_type=AnswerType.normal)
     elif isinstance(session.current_question, QuestionEstimate):
         # TODO
         pass
-    db.session.add(choose)
+    if choose is not None:
+        db.session.add(choose)
     db.session.commit()
-    emit('selection', {'selected': ans}, room=disp.token)
+    if not session.isfinal():
+        emit('selection', {'selected': ans}, room=disp.token)
 
 
 @socketio.on('pause_quiz', namespace='/quiz')
@@ -776,4 +832,4 @@ def err_rollback(err):
 
 
 if __name__ == '__main__':
-    app.run(port=app.config.get('PORT'), threaded=True)
+    app.run(host=app.config.get('HOST'), port=app.config.get('PORT'), threaded=True)

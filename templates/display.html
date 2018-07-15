@@ -78,6 +78,7 @@
                     disp += '<br/>' + team_names.join(', ');
 
                     team = msg.teams[0];
+                    teams = msg.teams;
                 }
                 $('#name').html(disp);
             });
@@ -141,11 +142,16 @@
                 console.log(msg);
                 var date = new Date(msg.time * 1000);
                 var time_str = date.getMinutes()+':'+ (date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds());
-                $('#score').html(txt + ' Punkt(e), Zeit: ' + time_str);
+                txt += ' Punkt(e)';
+                if (msg.team.length == 1) {
+                    txt += ', Zeit: ' + time_str;
+                }
+                $('#score').html(txt);
                 $('#endcard').show();
             });
             socket.on('timer', function (msg) {
-                var date = new Date((msg.time_total - msg.time_running) * 1000);
+                var tdiff = msg.time_total - msg.time_running
+                var date = new Date((tdiff > 0? tdiff : 0) * 1000);
                 $('#timer').html(date.getMinutes()+':'+ (date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds()));
             });
             socket.on('update_qcount', function (msg) {
@@ -183,7 +189,7 @@
                         $(v).children().each(function (i, k) {
                             $(k).addClass("selected");
                         });
-                        socket.emit('answer_selected', {team_id: team.id, answer_id: $(v).attr("data-ans_id")});
+                        socket.emit('answer_selected', {team_id: $(v).attr("data-team_id"), answer_id: $(v).attr("data-ans_id")});
                         window.setTimeout(function () {
                             socket.emit('answer_selected_result', {});
                         }, 1500);
