@@ -466,7 +466,7 @@ def timer_task():
                         time_running = session.offset
                     else:
                         time_running = datetime.datetime.now() - session.start_time + session.offset
-                    time_total = datetime.timedelta(minutes=15)
+                    time_total = datetime.timedelta(minutes=13)
                     if session.isfinal():
                         time_running = datetime.timedelta(seconds=10)
                     socketio.emit('timer', {'time_running': time_running.total_seconds(),
