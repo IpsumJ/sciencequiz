@@ -7,7 +7,7 @@
     font-family: PT Sans;
 }
 
-body {
+.no_ovl {
     /*background-color: rgba(25, 176, 157, 0.05);*/
     overflow: hidden;
 }
