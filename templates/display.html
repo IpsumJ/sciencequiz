@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block body %}
     <h2 id="info_header">
-        <span id="timer"></span>
+        <span id="timer">0:00</span> | <span id="qcount"></span><br>
         <span id="score_live"></span>
-        <span id="qcount"></span>
     </h2>
+    <div class="clear"></div>
     <div class="question_container">
         <p class="question" id="question">Loading...</p>
         <img id="question_image" class="display_image" src="">
@@ -12,25 +12,31 @@
     <div class="answerbox">
         <div id="a" class="answer">
             <div class="ansletter">A</div>
-            <div class="anstext">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor
-                invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo
-                dolores et ea rebum. Stet clita kasd gubergren,
+            <div class="anstext">
+                <span class="anstext_cntn">Lorem ipsum</span>
+                <div class="anschoosen" hidden><span id="ch_af" class="choosen_first"></span> <span id="ch_a"></span></div>
             </div>
         </div>
         <div id="b" class="answer">
             <div class="ansletter">B</div>
-            <div class="anstext">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam</div>
+            <div class="anstext">
+                <span class="anstext_cntn">Lorem ipsum</span>
+                <div class="anschoosen" hidden><span id="ch_bf" class="choosen_first"></span> <span id="ch_b"></span></div>
+            </div>
         </div>
         <div id="c" class="answer">
             <div class="ansletter">C</div>
-            <div class="anstext">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor
-                invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo
-                dolores et ea rebum. Stet clita kasd gubergren,
+            <div class="anstext">
+                <span class="anstext_cntn">Lorem ipsum</span>
+                <div class="anschoosen" hidden><span id="ch_cf" class="choosen_first"></span> <span id="ch_c"></span></div>
             </div>
         </div>
         <div id="d" class="answer">
             <div class="ansletter">D</div>
-            <div class="anstext">Lorem ipsum</div>
+            <div class="anstext">
+                <span class="anstext_cntn">Lorem ipsum</span>
+                <div class="anschoosen" hidden><span id="ch_cf" class="choosen_first"></span> <span id="ch_c"></span></div>
+            </div>
         </div>
     </div>
     <script type="text/javascript" src="/static/js/jquery.min.js"></script>
@@ -92,7 +98,7 @@
                         break;
                     }
                     var elem = $('#' + 'abcd'[i]);
-                    elem.find('.anstext').html(answer.answer);
+                    elem.find('.anstext_cntn').html(answer.answer);
                     elem.attr("data-ans_id", answer.id);
                 }
                 if(team.id in msg.question.team_answers && msg.question.team_answers[team.id] == answer.id) {
@@ -102,15 +108,18 @@
                             $(k).addClass("selected");
                         });
                 }
+                $(".anschoosen").each(function (i, v) {
+                    $(v).hide();
+                });
                 if (question.image != null) {
                     window.console.debug(question.image);
                     $('#question_image').show();
-                    $('#logo_head').hide();
+                    $('#logo_head').addClass('logo_small');
                     $('#question_image').attr('src', '/media/' + question.image);
                     $('#question').addClass('question_w_image');
                 } else {
                     $('#question_image').hide();
-                    $('#logo_head').show();
+                    $('#logo_head').removeClass('logo_small');
                     $('#question').removeClass('question_w_image');
                 }
             });
@@ -135,16 +144,17 @@
             });
             socket.on('finished', function (msg) {
                 var txt = "";
+                var segm = [];
                 var i;
                 for(i = 0; i < msg.score.length; i++) {
-                    txt += msg.team[i] + ': ' + msg.score[i] + ' ';
+                    segm.push(msg.team[i] + ':&nbsp;' + msg.score[i]);
                 }
+                txt += segm.join(', ');
                 console.log(msg);
                 var tdiff = msg.time;
                 var min = Math.floor(tdiff / 60);
                 var sec = Math.ceil(tdiff % 60);
                 var time_str = min+':'+ (sec < 10 ? '0' + sec : sec);
-                txt += ' Punkt(e)';
                 if (msg.team.length == 1) {
                     txt += ', Zeit: ' + time_str;
                 }
@@ -161,12 +171,12 @@
                 $('#qcount').html('Frage ' + msg.question + ' von ' + msg.questions);
             });
             socket.on('update_score', function (msg) {
-                var txt = "";
+                var segm = [];
                 var i;
                 for(i = 0; i < msg.score.length; i++) {
-                    txt += msg.team[i] + ': ' + msg.score[i] + ' ';
+                    segm.push(msg.team[i] + ':&nbsp;' + msg.score[i]);
                 }
-                $('#score_live').html(txt + ' Punkt(e)');
+                $('#score_live').html(segm.join(', '));
             });
             socket.on('answer_response', function (msg) {
                 var corr = msg.correct;
@@ -182,6 +192,18 @@
                     eles.removeClass();
                     eles.attr("class", "ansletter correctchoise");
                 }
+                console.log(msg);
+                $("#ch_af").html(msg['ans']['af']);
+                $("#ch_a").html(msg['ans']['a'].join(' '));
+                $("#ch_bf").html(msg['ans']['bf']);
+                $("#ch_b").html(msg['ans']['b'].join(' '));
+                $("#ch_cf").html(msg['ans']['cf']);
+                $("#ch_c").html(msg['ans']['c'].join(' '));
+                $("#ch_df").html(msg['ans']['df']);
+                $("#ch_d").html(msg['ans']['d'].join(' '));
+                $(".anschoosen").each(function (i, v) {
+                    $(v).show();
+                });
             });
 
             $(".answer").each(function (i, v) {

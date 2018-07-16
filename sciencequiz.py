@@ -605,7 +605,29 @@ def answer_selected_result(message):
     session = get_current_session_by_token(token)
     quest = session.current_question
     if isinstance(quest, QuestionChoose) and (message['mode'] == "manual" or not session.isfinal()):
-        emit('answer_response', {'correct': quest.correct_answer_id}, room=disp.token)
+        choosen = {'af': '', 'a': [], 'bf': '', 'b': [], 'cf': '', 'c': [], 'df': '', 'd': []}
+        for ts in session.team_sessions:
+            for ans in ts.answers:
+                if ans.answer.question == quest:
+                    aidx = quest.answers.index(ans.answer)
+                    if aidx == 0 and ans.answer_type == AnswerType.final_first:
+                        choosen['af'] = ts.team.name
+                    elif aidx == 0:
+                        choosen['a'].append(ts.team.name)
+                    elif aidx == 1 and ans.answer_type == AnswerType.final_first:
+                        choosen['bf'] = ts.team.name
+                    elif aidx == 1:
+                        choosen['b'].append(ts.team.name)
+                    elif aidx == 2 and ans.answer_type == AnswerType.final_first:
+                        choosen['cf'] = ts.team.name
+                    elif aidx == 2:
+                        choosen['c'].append(ts.team.name)
+                    elif aidx == 3 and ans.answer_type == AnswerType.final_first:
+                        choosen['df'] = ts.team.name
+                    elif aidx == 3:
+                        choosen['d'].append(ts.team.name)
+
+        emit('answer_response', {'correct': quest.correct_answer_id, 'ans': choosen}, room=disp.token)
         socketio.emit('update_score', {'score': [t.score() for t in session.team_sessions],
             'team' : [t.team.name for t in session.team_sessions]},
             room=session.device_token.token, namespace="/quiz")
